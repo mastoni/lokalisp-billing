@@ -1,25 +1,28 @@
-// Database connection configuration
-// Replace with your actual database connection logic
+const { Pool } = require('pg');
+require('dotenv').config();
+
+const pool = new Pool({
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'lokalisp_billing',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD,
+});
 
 const connectDB = async () => {
   try {
-    // Example: PostgreSQL connection
-    // const { Pool } = require('pg');
-    // const pool = new Pool({
-    //   host: process.env.DB_HOST,
-    //   port: process.env.DB_PORT,
-    //   database: process.env.DB_NAME,
-    //   user: process.env.DB_USER,
-    //   password: process.env.DB_PASSWORD,
-    // });
-    
-    // await pool.connect();
-    console.log('Database connected successfully');
-    // module.exports = pool;
-  } catch (error) {
-    console.error('Database connection failed:', error);
-    throw error;
+    const client = await pool.connect();
+    console.log('PostgreSQL Connected');
+    client.release();
+  } catch (err) {
+    console.error('Database connection error:', err.message);
+    process.exit(1);
   }
 };
 
-module.exports = { connectDB };
+module.exports = {
+  pool,
+  connectDB,
+  query: (text, params) => pool.query(text, params),
+  connect: () => pool.connect(),
+};
