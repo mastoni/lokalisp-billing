@@ -9,8 +9,11 @@ const startServer = async () => {
     await connectDB();
     
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV}`);
+      console.log(`\n═══════════════════════════════════════`);
+      console.log(`🚀 Billing Sembok API`);
+      console.log(`🌐 Server running on port ${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`═══════════════════════════════════════\n`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

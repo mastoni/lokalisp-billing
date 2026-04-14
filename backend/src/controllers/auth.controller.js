@@ -55,10 +55,15 @@ const login = async (req, res) => {
 
     res.status(200).json(result);
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error detail:', {
+      message: error.message,
+      stack: error.stack,
+      body: req.body
+    });
     res.status(500).json({
       success: false,
       message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 };

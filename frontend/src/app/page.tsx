@@ -3,12 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Users,
-  FileText,
-  CreditCard,
   Zap,
-  Shield,
-  BarChart3,
   CheckCircle,
   ArrowRight,
   Phone,
@@ -16,6 +11,12 @@ import {
   Globe,
   Menu,
   X,
+  Wifi,
+  Headphones,
+  Clock,
+  Shield,
+  Gauge,
+  MonitorSmartphone,
 } from 'lucide-react';
 
 export default function Home() {
@@ -28,28 +29,28 @@ export default function Home() {
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Zap className="h-8 w-8 text-primary-600" />
+              <Wifi className="h-8 w-8 text-primary-600" />
               <span className="ml-2 text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
-                Billing Sembok
+                LokalISP
               </span>
             </div>
-            
+
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-primary-600 font-medium transition">
-                Features
+                Keunggulan
               </a>
               <a href="#pricing" className="text-gray-600 hover:text-primary-600 font-medium transition">
-                Pricing
+                Paket Internet
               </a>
               <a href="#about" className="text-gray-600 hover:text-primary-600 font-medium transition">
-                About
+                Tentang Kami
               </a>
               <Link
                 href="/login"
                 className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition shadow-lg shadow-primary-600/20"
               >
-                Login
+                Login Pelanggan
               </Link>
             </div>
 
@@ -74,28 +75,28 @@ export default function Home() {
                 onClick={() => setIsMenuOpen(false)}
                 className="block px-3 py-2 text-gray-600 hover:text-primary-600 font-medium"
               >
-                Features
+                Keunggulan
               </a>
               <a
                 href="#pricing"
                 onClick={() => setIsMenuOpen(false)}
                 className="block px-3 py-2 text-gray-600 hover:text-primary-600 font-medium"
               >
-                Pricing
+                Paket Internet
               </a>
               <a
                 href="#about"
                 onClick={() => setIsMenuOpen(false)}
                 className="block px-3 py-2 text-gray-600 hover:text-primary-600 font-medium"
               >
-                About
+                Tentang Kami
               </a>
               <Link
                 href="/login"
                 onClick={() => setIsMenuOpen(false)}
                 className="block px-3 py-2 text-primary-600 font-bold"
               >
-                Login
+                Login Pelanggan
               </Link>
             </div>
           </div>
@@ -103,35 +104,29 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white py-20 lg:py-32">
-        {/* Abstract background elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none opacity-20">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-white blur-[100px]"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-primary-400 blur-[100px]"></div>
-        </div>
-
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 relative z-10">
+      <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-20 lg:py-32">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="text-center">
-            <h1 className="text-3xl md:text-7xl lg:text-8xl font-extrabold mb-6 leading-tight">
-              Simplify Your <span className="text-primary-200">ISP Billing</span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+              Internet Cepat & Stabil untuk Rumah Anda
             </h1>
-            <p className="text-base md:text-2xl lg:text-3xl mb-8 text-primary-100 max-w-3xl mx-auto leading-relaxed">
-              The complete billing and management solution for Internet Service Providers. 
-              Automate invoicing, track payments, and grow your business with ease.
+            <p className="text-lg sm:text-xl lg:text-2xl mb-8 text-primary-100 max-w-3xl mx-auto">
+              Nikmati koneksi internet unlimited dengan kecepatan hingga 100 Mbps. 
+              Streaming, gaming, dan WFH tanpa buffering. Harga mulai dari Rp 150.000/bulan!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/login"
-                className="bg-white text-primary-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition inline-flex items-center justify-center shadow-2xl shadow-black/20"
+                className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition inline-flex items-center justify-center"
               >
-                Get Started Free
+                Berlangganan Sekarang
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
               <a
-                href="#features"
-                className="bg-primary-500/20 backdrop-blur-md border-2 border-white/30 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/20 transition inline-flex items-center justify-center"
+                href="#pricing"
+                className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition inline-flex items-center justify-center"
               >
-                Learn More
+                Lihat Paket
               </a>
             </div>
           </div>
@@ -139,120 +134,146 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white relative -mt-10 sm:-mt-16 z-20">
+      <section className="py-16 bg-white">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 sm:p-12 grid grid-cols-1 md:grid-cols-3 gap-12 sm:gap-8">
-            <div className="text-center border-b md:border-b-0 md:border-r border-gray-100 pb-8 md:pb-0">
-              <div className="text-3xl md:text-6xl font-extrabold text-primary-600 mb-2">500+</div>
-              <div className="text-gray-500 font-medium text-sm md:text-lg uppercase tracking-wider">Active ISPs</div>
-            </div>
-            <div className="text-center border-b md:border-b-0 md:border-r border-gray-100 pb-8 md:pb-0">
-              <div className="text-3xl md:text-6xl font-extrabold text-primary-600 mb-2">50K+</div>
-              <div className="text-gray-500 font-medium text-sm md:text-lg uppercase tracking-wider">Customers</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">500+</div>
+              <div className="text-gray-600 text-sm md:text-base">Pelanggan Aktif</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl md:text-6xl font-extrabold text-primary-600 mb-2">99.9%</div>
-              <div className="text-gray-500 font-medium text-sm md:text-lg uppercase tracking-wider">Uptime</div>
+              <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">99.9%</div>
+              <div className="text-gray-600 text-sm md:text-base">Uptime Jaringan</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">24/7</div>
+              <div className="text-gray-600 text-sm md:text-base">Support Teknis</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">10+</div>
+              <div className="text-gray-600 text-sm md:text-base">Tahun Pengalaman</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-gray-50">
+      <section id="features" className="py-20 bg-gray-50">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="text-center mb-20">
-            <h2 className="text-2xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
-              Everything You Need
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Kenapa Pilih LokalISP?
             </h2>
-            <p className="text-sm md:text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto">
-              Powerful features to streamline your ISP billing and management, designed for modern ISPs.
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto">
+              Kami berkomitmen memberikan pelayanan internet terbaik untuk Anda
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard
-              icon={<Users className="h-10 w-10 text-primary-600" />}
-              title="Customer Management"
-              description="Easily manage customer accounts, subscriptions, and service plans in one integrated dashboard."
+              icon={<Gauge className="h-10 w-10 text-primary-600" />}
+              title="Kecepatan Tinggi"
+              description="Nikmati kecepatan internet hingga 100 Mbps dengan teknologi fiber optic terbaru."
             />
             <FeatureCard
-              icon={<FileText className="h-10 w-10 text-primary-600" />}
-              title="Invoice Generation"
-              description="Automatically generate professional invoices with customizable templates and automated delivery."
+              icon={<Clock className="h-10 w-10 text-primary-600" />}
+              title="Uptime 99.9%"
+              description="Koneksi stabil dan handal dengan jaminan uptime hingga 99.9%."
             />
             <FeatureCard
-              icon={<CreditCard className="h-10 w-10 text-primary-600" />}
-              title="Payment Tracking"
-              description="Record and monitor all payments with real-time status updates and payment gateway integration."
-            />
-            <FeatureCard
-              icon={<BarChart3 className="h-10 w-10 text-primary-600" />}
-              title="Analytics & Reports"
-              description="Gain deep business insights with comprehensive reports and visual real-time analytics."
+              icon={<Headphones className="h-10 w-10 text-primary-600" />}
+              title="Support 24/7"
+              description="Tim support siap membantu Anda kapan saja melalui telepon atau WhatsApp."
             />
             <FeatureCard
               icon={<Shield className="h-10 w-10 text-primary-600" />}
-              title="Secure & Reliable"
-              description="Enterprise-grade security with multi-factor authentication and bank-level data encryption."
+              title="Aman & Terpercaya"
+              description="Jaringan aman dengan proteksi firewall dan enkripsi data."
+            />
+            <FeatureCard
+              icon={<MonitorSmartphone className="h-10 w-10 text-primary-600" />}
+              title="Unlimited Usage"
+              description="Tidak ada batasan FUP! Gunakan internet sepuasnya tanpa khawatir."
             />
             <FeatureCard
               icon={<Zap className="h-10 w-10 text-primary-600" />}
-              title="Automated Workflows"
-              description="Save hours each week with automated billing cycles, grace periods, and late notifications."
+              title="Instalasi Cepat"
+              description="Proses instalasi gratis dan bisa dilakukan dalam 1-2 hari kerja."
             />
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 bg-white">
+      <section id="pricing" className="py-20 bg-white">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="text-center mb-20">
-            <h2 className="text-2xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
-              Simple, Transparent Pricing
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Paket Internet Bulanan
             </h2>
-            <p className="text-sm md:text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto">
-              No hidden fees. Scale your business with our flexible pricing plans.
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto">
+              Pilih paket yang sesuai dengan kebutuhan Anda. Semua paket unlimited tanpa FUP!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <PricingCard
-              name="Starter"
-              price="$29"
-              description="Perfect for small local ISPs"
+              name="Basic"
+              speed="10 Mbps"
+              price="150.000"
+              description="Cocok untuk browsing dan media sosial"
               features={[
-                'Up to 100 customers',
-                'Basic invoicing',
-                'Payment tracking',
-                'Email support',
+                'Kecepatan hingga 10 Mbps',
+                'Unlimited tanpa FUP',
+                'Support 24/7',
+                '1-3 perangkat',
+                'Gratis instalasi',
               ]}
             />
             <PricingCard
-              name="Professional"
-              price="$79"
-              description="Best for growing ISP businesses"
+              name="Standard"
+              speed="20 Mbps"
+              price="250.000"
+              description="Ideal untuk streaming HD"
               features={[
-                'Up to 500 customers',
-                'Advanced invoicing',
-                'Analytics & reports',
-                'Priority support',
-                'Automated workflows',
+                'Kecepatan hingga 20 Mbps',
+                'Unlimited tanpa FUP',
+                'Support 24/7',
+                '3-5 perangkat',
+                'Gratis instalasi',
+                'IP Public Static',
+              ]}
+            />
+            <PricingCard
+              name="Premium"
+              speed="50 Mbps"
+              price="350.000"
+              description="Sempurna untuk WFH dan gaming"
+              features={[
+                'Kecepatan hingga 50 Mbps',
+                'Unlimited tanpa FUP',
+                'Support 24/7 prioritas',
+                '5-10 perangkat',
+                'Gratis instalasi',
+                'IP Public Static',
+                'Free router WiFi',
               ]}
               highlighted={true}
             />
             <PricingCard
-              name="Enterprise"
-              price="$199"
-              description="For large-scale ISP operations"
+              name="Ultimate"
+              speed="100 Mbps"
+              price="450.000"
+              description="Untuk rumah pintar dan bisnis"
               features={[
-                'Unlimited customers',
-                'Full feature access',
-                'Custom integrations',
-                '24/7 dedicated support',
-                'Dedicated account manager',
-                'REST API access',
+                'Kecepatan hingga 100 Mbps',
+                'Unlimited tanpa FUP',
+                'Support 24/7 prioritas',
+                'Unlimited perangkat',
+                'Gratis instalasi',
+                'IP Public Static',
+                'Free router WiFi 6',
+                'Dedicated bandwidth',
               ]}
             />
           </div>
@@ -260,58 +281,46 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-24 bg-gray-50 overflow-hidden">
+      <section id="about" className="py-20 bg-gray-50">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="relative">
-              <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-              <div className="absolute -bottom-20 right-20 w-64 h-64 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-              
-              <h2 className="text-2xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Built for ISPs,<br /> <span className="text-primary-600">by ISP Experts</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                ISP Lokal Terpercaya
               </h2>
-              <p className="text-base md:text-xl lg:text-2xl text-gray-600 mb-8 leading-relaxed">
-                We understand the unique challenges that Internet Service Providers face because we've lived them.
-                Billing Sembok is designed specifically to solve those headaches with intuitive
-                tools and powerful automation that just works.
+              <p className="text-base sm:text-lg text-gray-600 mb-6">
+                LokalISP adalah penyedia layanan internet lokal yang telah berpengalaman lebih dari 10 tahun. 
+                Kami berkomitmen memberikan koneksi internet terbaik dengan harga terjangkau untuk masyarakat.
               </p>
-              <ul className="space-y-4 mb-8">
-                <ListItem>Easy setup and onboarding in under 30 minutes</ListItem>
-                <ListItem>Scalable infrastructure that grows with your business</ListItem>
-                <ListItem>Regular feature updates based on user feedback</ListItem>
-                <ListItem>Community and dedicated enterprise support teams</ListItem>
+              <ul className="space-y-4">
+                <ListItem>Jaringan fiber optic modern</ListItem>
+                <ListItem>Tim teknisi profesional dan berpengalaman</ListItem>
+                <ListItem>Customer service ramah dan responsif</ListItem>
+                <ListItem>Harga kompetitif tanpa biaya tersembunyi</ListItem>
+                <ListItem>Garansi koneksi atau uang kembali</ListItem>
               </ul>
             </div>
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary-600 to-purple-600 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative bg-white p-8 sm:p-12 rounded-2xl shadow-2xl">
-                <div className="space-y-8">
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 bg-primary-100 p-3 rounded-xl">
-                      <CheckCircle className="h-6 w-6 text-primary-600" />
-                    </div>
-                    <div className="ml-5">
-                      <h3 className="text-xl font-bold text-gray-900">Quick Integration</h3>
-                      <p className="text-gray-600 mt-1">Connect with Mikrotik, OLTs, and your existing network stack in minutes.</p>
-                    </div>
+            <div className="bg-white p-8 rounded-2xl shadow-lg">
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
+                  <div className="ml-4">
+                    <h3 className="font-semibold text-gray-900 text-lg">Area Jangkauan Luas</h3>
+                    <p className="text-gray-600">Melayani berbagai wilayah dengan jaringan yang terus berkembang</p>
                   </div>
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 bg-primary-100 p-3 rounded-xl">
-                      <CheckCircle className="h-6 w-6 text-primary-600" />
-                    </div>
-                    <div className="ml-5">
-                      <h3 className="text-xl font-bold text-gray-900">Seamless Migration</h3>
-                      <p className="text-gray-600 mt-1">Our team helps you port your existing data from spreadsheets or old software.</p>
-                    </div>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
+                  <div className="ml-4">
+                    <h3 className="font-semibold text-gray-900 text-lg">Gratis Survey & Instalasi</h3>
+                    <p className="text-gray-600">Tim kami akan melakukan survey dan instalasi tanpa biaya</p>
                   </div>
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 bg-primary-100 p-3 rounded-xl">
-                      <CheckCircle className="h-6 w-6 text-primary-600" />
-                    </div>
-                    <div className="ml-5">
-                      <h3 className="text-xl font-bold text-gray-900">Expert Support</h3>
-                      <p className="text-gray-600 mt-1">Get help from people who actually know what a 'PPPoE session' is.</p>
-                    </div>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />
+                  <div className="ml-4">
+                    <h3 className="font-semibold text-gray-900 text-lg">Garansi Koneksi</h3>
+                    <p className="text-gray-600">Jika tidak puas dalam 30 hari, uang Anda kembali</p>
                   </div>
                 </div>
               </div>
@@ -321,85 +330,97 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-white relative">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-[3rem] p-12 sm:p-20 text-center relative overflow-hidden shadow-2xl shadow-primary-600/30">
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-            
-            <div className="relative z-10">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-6">
-                Ready to Streamline Your Billing?
-              </h2>
-              <p className="text-lg sm:text-xl mb-10 text-primary-100 max-w-2xl mx-auto">
-                Join hundreds of ISPs who have already eliminated billing headaches with Billing Sembok.
-                "Jangan Ambil Pusing" - let us handle the hard work.
-              </p>
-              <Link
-                href="/login"
-                className="bg-white text-primary-600 px-10 py-5 rounded-2xl font-extrabold text-lg hover:bg-gray-100 transition inline-flex items-center shadow-xl"
-              >
-                Start Your Free Trial
-                <ArrowRight className="ml-2 h-6 w-6" />
-              </Link>
-              <p className="mt-6 text-primary-200/80 text-sm font-medium">No credit card required. 14-day free trial.</p>
-            </div>
+      <section className="py-20 bg-primary-600 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 text-center">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+            Siap Berlangganan?
+          </h2>
+          <p className="text-base sm:text-lg lg:text-xl mb-8 text-primary-100">
+            Hubungi kami sekarang dan dapatkan diskon 20% untuk bulan pertama!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="https://wa.me/6281234567890"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition inline-flex items-center"
+            >
+              <Phone className="mr-2 h-5 w-5" />
+              WhatsApp Kami
+            </a>
+            <Link
+              href="/login"
+              className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-600 transition inline-flex items-center"
+            >
+              Login Pelanggan
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-20">
+      <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div className="md:col-span-2">
-              <div className="flex items-center mb-6">
-                <Zap className="h-10 w-10 text-primary-400" />
-                <span className="ml-3 text-2xl font-bold">Billing Sembok</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <div className="flex items-center mb-4">
+                <Wifi className="h-8 w-8 text-primary-400" />
+                <span className="ml-2 text-xl font-bold">LokalISP</span>
               </div>
-              <p className="text-gray-400 text-lg max-w-sm mb-8">
-                The complete billing and management solution for Internet Service Providers. 
-                Automate your business and focus on what matters.
+              <p className="text-gray-400">
+                Penyedia layanan internet lokal terpercaya dengan koneksi cepat dan stabil.
               </p>
-              <div className="flex space-x-6">
-                {/* Social placeholders */}
-                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary-600 transition cursor-pointer"><Globe className="w-5 h-5" /></div>
-                <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary-600 transition cursor-pointer"><Mail className="w-5 h-5" /></div>
-              </div>
             </div>
             <div>
-              <h3 className="font-bold text-xl md:text-2xl mb-6">Product</h3>
-              <ul className="space-y-4">
-                <li><a href="#features" className="text-gray-400 hover:text-white transition">Features</a></li>
-                <li><a href="#pricing" className="text-gray-400 hover:text-white transition">Pricing</a></li>
-                <li><a href="#about" className="text-gray-400 hover:text-white transition">Case Studies</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Documentation</a></li>
+              <h3 className="font-semibold text-lg mb-4">Menu Cepat</h3>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#features" className="text-gray-400 hover:text-white transition">
+                    Keunggulan
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="text-gray-400 hover:text-white transition">
+                    Paket Internet
+                  </a>
+                </li>
+                <li>
+                  <a href="#about" className="text-gray-400 hover:text-white transition">
+                    Tentang Kami
+                  </a>
+                </li>
+                <li>
+                  <Link href="/login" className="text-gray-400 hover:text-white transition">
+                    Login Pelanggan
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold text-xl md:text-2xl mb-6">Contact</h3>
-              <ul className="space-y-4">
+              <h3 className="font-semibold text-lg mb-4">Hubungi Kami</h3>
+              <ul className="space-y-3">
                 <li className="flex items-center text-gray-400">
-                  <Mail className="h-5 w-5 mr-3 text-primary-400" />
-                  support@sembokbill.com
+                  <Phone className="h-5 w-5 mr-2" />
+                  +62 812-3456-7890
                 </li>
                 <li className="flex items-center text-gray-400">
-                  <Phone className="h-5 w-5 mr-3 text-primary-400" />
-                  +1 (555) 123-4567
+                  <Mail className="h-5 w-5 mr-2" />
+                  info@lokalisp.com
                 </li>
                 <li className="flex items-center text-gray-400">
-                  <Globe className="h-5 w-5 mr-3 text-primary-400" />
-                  www.sembokbill.com
+                  <Globe className="h-5 w-5 mr-2" />
+                  www.lokalisp.com
+                </li>
+                <li className="flex items-center text-gray-400">
+                  <Clock className="h-5 w-5 mr-2" />
+                  Senin - Minggu, 24 Jam
                 </li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500">
-            <p className="text-sm md:text-base">&copy; 2026 Billing Sembok. "Jangan Ambil Pusing". All rights reserved.</p>
-            <div className="flex space-x-8 mt-4 md:mt-0">
-              <a href="#" className="hover:text-white transition">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition">Terms of Service</a>
-            </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2026 LokalISP. All rights reserved.</p>
           </div>
         </div>
       </footer>
@@ -417,24 +438,24 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="group bg-white p-10 rounded-3xl border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-      <div className="mb-6 bg-primary-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-primary-600 group-hover:rotate-6 transition-all duration-300">
-        <div className="group-hover:text-white transition-colors duration-300">{icon}</div>
-      </div>
-      <h3 className="text-xl md:text-3xl font-bold mb-4 text-gray-900">{title}</h3>
-      <p className="text-gray-600 leading-relaxed text-sm md:text-xl">{description}</p>
+    <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow border border-gray-100">
+      <div className="mb-4">{icon}</div>
+      <h3 className="text-xl font-semibold mb-3 text-gray-900">{title}</h3>
+      <p className="text-gray-600">{description}</p>
     </div>
   );
 }
 
 function PricingCard({
   name,
+  speed,
   price,
   description,
   features,
   highlighted = false,
 }: {
   name: string;
+  speed: string;
   price: string;
   description: string;
   features: string[];
@@ -442,43 +463,51 @@ function PricingCard({
 }) {
   return (
     <div
-      className={`relative bg-white rounded-[2rem] p-10 transition-all duration-300 ${
+      className={`bg-white rounded-2xl shadow-lg p-8 ${
         highlighted
-          ? 'shadow-2xl border-4 border-primary-600 md:scale-105 z-10'
-          : 'shadow-lg border border-gray-100 hover:shadow-xl'
+          ? 'border-4 border-primary-600 transform scale-105 relative'
+          : 'border-2 border-gray-200'
       }`}
     >
       {highlighted && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary-600 text-white text-center py-2 px-6 rounded-full text-sm font-bold uppercase tracking-widest shadow-xl shadow-primary-600/40">
-          Most Popular
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+          <span className="bg-primary-600 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg">
+            Paling Populer
+          </span>
         </div>
       )}
-      <h3 className="text-xl md:text-3xl font-bold text-gray-900 mb-2">{name}</h3>
-      <div className="mb-6 flex items-baseline">
-        <span className="text-4xl md:text-7xl font-extrabold text-gray-900">{price}</span>
-        <span className="text-gray-500 ml-2 font-medium text-sm md:text-lg">/month</span>
+      <div className="text-center mb-6">
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
+        <div className="flex items-center justify-center mb-2">
+          <Wifi className="h-5 w-5 text-primary-600 mr-2" />
+          <span className="text-3xl font-bold text-primary-600">{speed}</span>
+        </div>
+        <p className="text-sm text-gray-600">{description}</p>
       </div>
-      <p className="text-gray-600 mb-8 font-medium text-base md:text-xl leading-snug">{description}</p>
-      <ul className="space-y-4 mb-10">
+      <div className="mb-6 text-center">
+        <span className="text-5xl font-bold text-gray-900">Rp {price}</span>
+        <span className="text-gray-600">/bulan</span>
+      </div>
+      <ul className="space-y-3 mb-8">
         {features.map((feature, index) => (
           <li key={index} className="flex items-start">
-            <div className="flex-shrink-0 mt-1">
-              <CheckCircle className="h-6 w-6 text-green-500" />
-            </div>
-            <span className="text-gray-700 ml-3 font-medium text-sm md:text-lg">{feature}</span>
+            <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+            <span className="text-gray-700">{feature}</span>
           </li>
         ))}
       </ul>
-      <Link
-        href="/login"
-        className={`block text-center py-5 px-8 rounded-2xl font-extrabold text-lg transition-all duration-300 ${
+      <a
+        href="https://wa.me/6281234567890"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`block text-center py-3 px-6 rounded-lg font-semibold transition ${
           highlighted
-            ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-xl shadow-primary-600/30'
+            ? 'bg-primary-600 text-white hover:bg-primary-700'
             : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
         }`}
       >
-        Get Started
-      </Link>
+        Pilih Paket
+      </a>
     </div>
   );
 }
@@ -486,13 +515,8 @@ function PricingCard({
 function ListItem({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex items-start">
-      <div className="flex-shrink-0 mt-1">
-        <div className="bg-primary-100 p-1 rounded-full">
-          <CheckCircle className="h-5 w-5 text-primary-600" />
-        </div>
-      </div>
-      <span className="text-gray-700 ml-4 font-medium text-sm md:text-lg tracking-wide">{children}</span>
+      <CheckCircle className="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-1" />
+      <span className="text-gray-700">{children}</span>
     </li>
   );
 }
-

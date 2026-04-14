@@ -1,43 +1,47 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
 require('dotenv').config();
 
+const authRoutes = require('./routes/auth.route');
+const customerRoutes = require('./routes/customer.route');
+const invoiceRoutes = require('./routes/invoice.route');
+const paymentRoutes = require('./routes/payment.route');
+const packageRoutes = require('./routes/package.route');
+const dashboardRoutes = require('./routes/dashboard.route');
+const rewardRoutes = require('./routes/reward.route');
+const deviceRoutes = require('./routes/device.route');
+
 const app = express();
+const PORT = process.env.PORT || 8081;
 
 // Middleware
-app.use(helmet());
 app.use(cors());
-app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/health', require('./routes/health.route'));
-app.use('/api/auth', require('./routes/auth.route'));
-app.use('/api/customers', require('./routes/customer.route'));
-app.use('/api/invoices', require('./routes/invoice.route'));
-app.use('/api/payments', require('./routes/payment.route'));
-app.use('/api/dashboard', require('./routes/dashboard.route'));
-app.use('/api/rewards', require('./routes/reward.route'));
-app.use('/api/devices', require('./routes/device.route'));
-
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(500).json({
     success: false,
-    message: 'Internal Server Error',
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined,
   });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found',
-  });
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/packages', packageRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/rewards', rewardRoutes);
+app.use('/api/devices', deviceRoutes);
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 module.exports = app;

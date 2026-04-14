@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS user_sessions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    token VARCHAR(500) NOT NULL,
+    token TEXT NOT NULL,
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -143,7 +143,7 @@ INSERT INTO users (username, email, password_hash, full_name, phone, role_id, is
 SELECT 
     'admin',
     'admin@lokalisp.com',
-    '$2b$10$rHt9w9Z1Y5Z1Y5Z1Y5Z1Y.9w9Z1Y5Z1Y5Z1Y5Z1Y5Z1Y5Z1Y5Z1Y5',
+    '$2b$10$vJa8wwKH9BSjsM4sNtCANe72SOwuMcvLglGlKCJNAc5gmHr.ueXKK',
     'System Administrator',
     '+6281234567890',
     (SELECT id FROM roles WHERE name = 'admin'),
