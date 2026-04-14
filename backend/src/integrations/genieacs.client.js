@@ -213,6 +213,16 @@ async function setWifiPasswordAuto(config, deviceId, { password, ssid } = {}, op
   return createTask(config, deviceId, task, options);
 }
 
+async function reboot(config, deviceId, options = {}) {
+  const task = { name: 'reboot' };
+  return createTask(config, deviceId, task, options);
+}
+
+async function refreshDevice(config, deviceId, options = {}) {
+  const task = { name: 'refreshObject', objectName: '' }; // Refresh root
+  return createTask(config, deviceId, task, options);
+}
+
 module.exports = {
   testGenieAcs,
   getDevices,
@@ -221,4 +231,6 @@ module.exports = {
   setWifiPassword,
   setWifiPasswordAuto,
   detectWifiParameterPaths,
+  reboot,
+  refreshDevice,
 };

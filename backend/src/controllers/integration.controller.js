@@ -1,4 +1,5 @@
 const IntegrationService = require('../services/integration.service');
+const DeviceService = require('../services/device.service');
 
 const test = async (req, res) => {
   try {
@@ -29,7 +30,7 @@ const test = async (req, res) => {
 
 const syncAcs = async (req, res) => {
   try {
-    const result = await IntegrationService.syncAcsDevices();
+    const result = await DeviceService.syncWithAcs();
     return res.json(result);
   } catch (error) {
     return res.status(500).json({

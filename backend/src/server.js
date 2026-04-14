@@ -1,6 +1,7 @@
 const app = require('./app');
 const { connectDB } = require('./config/database');
 const { startAcsSyncScheduler } = require('./workers/acsSyncScheduler');
+const { startDeviceCommandWorker } = require('./workers/deviceCommandWorker');
 
 const PORT = process.env.PORT || 8081;
 
@@ -22,6 +23,7 @@ const startServer = async () => {
     });
 
     startAcsSyncScheduler();
+    startDeviceCommandWorker();
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

@@ -1,15 +1,19 @@
-# LokalISP Billing System
+# LokalISP Billing System (Billing Sembok)
 
-A full-stack ISP Billing and Management System built with Express.js (backend) and Next.js (frontend).
+A premium, full-stack ISP Billing and Remote Management System built with Express.js (backend) and Next.js (frontend). Designed for performance, reliability, and ease of use with a stunning glassmorphic UI.
 
-## 🚀 Features
+## 🚀 Key Features
 
-- Customer management
-- Invoice generation and tracking
-- Payment recording and monitoring
-- User authentication and authorization
-- RESTful API backend
-- Modern responsive UI
+- **Dashboard 3.0**: Premium glassmorphic interface with real-time revenue stats, customer distribution, and activity monitoring.
+- **Remote Device Management (TR-069)**: Full integration with GenieACS for ONT/Router management.
+  - **Remote Reboot**: Restart customer devices directly from the portal.
+  - **WiFi Management**: Change SSID and WiFi passwords remotely.
+  - **Automated Sync**: Background workers to keep device statuses and customer mappings up to date.
+- **System Command Queue**: Asynchronous task processing using a robust database-backed worker system.
+- **Centralized Settings**: Manage MikroTik, WhatsApp, and GenieACS configurations through a category-based admin UI.
+- **PWA Ready**: Mobile-optimized Progressive Web App with offline support and a native-like experience for customers.
+- **Reward System**: Built-in loyalty points and reward redemption system.
+- **Core Billing**: Customer management, automated invoice generation, and payment tracking.
 
 ## 📁 Project Structure
 
@@ -18,204 +22,85 @@ lokalisp-billing/
 ├── backend/                    # Express.js API server
 │   ├── src/
 │   │   ├── config/            # Database and app configuration
-│   │   ├── controllers/       # Route controllers
+│   │   ├── controllers/       # Route controllers (Dashboard, Device, Portal)
+│   │   ├── integrations/      # External API clients (GenieACS, MikroTik, Radius)
 │   │   ├── middleware/        # Custom middleware (auth, validation)
-│   │   ├── models/            # Data models
 │   │   ├── routes/            # API routes
-│   │   ├── services/          # Business logic
+│   │   ├── services/          # Business logic layers
+│   │   ├── workers/           # Background jobs (Sync, Command Queue)
 │   │   ├── app.js             # Express app setup
 │   │   └── server.js          # Server entry point
-│   ├── package.json
-│   └── .env.example
 ├── frontend/                   # Next.js client application
 │   ├── src/
-│   │   ├── app/               # Next.js 13+ app directory
-│   │   │   ├── (auth)/        # Authentication pages (login, register)
-│   │   │   ├── customers/     # Customer management pages
-│   │   │   ├── invoices/      # Invoice management pages
-│   │   │   ├── payments/      # Payment management pages
-│   │   │   ├── layout.tsx     # Root layout
-│   │   │   ├── page.tsx       # Home page
-│   │   │   └── globals.css    # Global styles
-│   │   ├── components/        # Reusable UI components
+│   │   ├── app/               # Next.js App Router (Admin, Customers, Agen)
+│   │   ├── components/        # UI components (Glassmorphism, Reusable)
 │   │   ├── lib/               # API client and utilities
-│   │   ├── services/          # API service functions
-│   │   └── store/             # State management (Zustand)
-│   ├── package.json
-│   ├── next.config.js
-│   ├── tailwind.config.js
-│   └── tsconfig.json
-├── package.json                # Root package for running both apps
-├── README.md
-└── ENV.md                      # Environment variables documentation
+│   │   ├── public/            # Assets and PWA manifest
 ```
 
 ## 🛠️ Tech Stack
 
 ### Backend
-- **Node.js** + **Express.js** - API framework
-- **PostgreSQL** - Database (configurable)
-- **JWT** - Authentication
-- **Helmet** - Security headers
-- **Morgan** - HTTP request logger
-- **CORS** - Cross-origin resource sharing
+- **Node.js** + **Express.js**
+- **Postgres** - Primary database
+- **JWT** - Secure stateless authentication
+- **TR-069 / GenieACS** - Remote management engine
+- **Lucide / Winston** - Logging and icons
 
 ### Frontend
 - **Next.js 14** - React framework with App Router
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Utility-first CSS framework
-- **Axios** - HTTP client
-- **Zustand** - State management
-- **React Hook Form** - Form handling
-- **React Hot Toast** - Notifications
-- **Lucide React** - Icons
+- **Tailwind CSS** - Glassmorphism and premium styling
+- **React Hot Toast** - Real-time notifications
+- **Lucide React** - Modern iconography
+- **PWA Service Workers** - For offline and mobile performance
+
+## ⚙️ Remote Management Architecture
+
+The system uses a 4-layer control flow to ensure reliability:
+1. **Controller**: Handles HTTP requests and returns immediate response.
+2. **DeviceService**: Business logic (normalization, customer mapping).
+3. **IntegrationService**: Multi-provider abstraction layer.
+4. **Integration Client**: Low-level API calls to external services.
+
+For write operations (reboot, wifi changes), a **Command Queue** is used to prevent timeouts and ensure task traceability.
+
+## 📡 Key API Endpoints
+
+### Administrative
+- `GET /api/dashboard/*` - Real-time statistics and analytics
+- `GET /api/settings` - Category-based system configurations
+- `POST /api/integrations/sync/genieacs` - Manual device sync
+
+### Device Control
+- `GET /api/devices/my-device` - Get assigned device details
+- `POST /api/devices/reboot` - Queue a remote reboot
+- `POST /api/devices/wifi-password` - Queue a WiFi change
+
+### Portal (Customer)
+- `GET /api/portal/me/modem` - Current modem status and WiFi info
+- `POST /api/portal/me/modem/reboot` - Remote reboot from PWA
+- `POST /api/portal/me/modem/wifi/password` - Self-service WiFi change
 
 ## 📋 Prerequisites
 
 - Node.js >= 18.x
-- npm or yarn
-- PostgreSQL (or your preferred database)
+- PostgreSQL 12+
+- GenieACS (optional, for remote management features)
 
 ## 🔧 Installation
 
-### Option 1: Install all dependencies at once (Recommended)
-
 ```bash
-# Install root dependencies (includes concurrently)
-npm install
-
-# Install both backend and frontend dependencies
+# Install all dependencies
 npm run install:all
-```
 
-### Option 2: Install separately
-
-```bash
-# Install backend dependencies
-cd backend
-npm install
-
-# Install frontend dependencies
-cd frontend
-npm install
-```
-
-## ⚙️ Configuration
-
-### Backend Configuration
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Copy the environment example file:
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Edit `.env` with your configuration:
-   ```env
-   NODE_ENV=development
-   PORT=8081
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_NAME=lokalisp_billing
-   DB_USER=postgres
-   DB_PASSWORD=your_password
-   JWT_SECRET=your-secret-key
-   JWT_EXPIRES_IN=7d
-   ```
-
-### Frontend Configuration
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Copy the environment example file:
-   ```bash
-   cp .env.local.example .env.local
-   ```
-
-3. Edit `.env.local` with your configuration:
-   ```env
-   NEXT_PUBLIC_API_URL=http://localhost:8081/api
-   ```
-
-## 🚀 Running the Application
-
-### Run Both Applications (Recommended)
-
-From the root directory, run both backend and frontend simultaneously:
-
-```bash
-# Development mode with hot reload
-npm run dev
-
-# This will start:
-# - Backend on http://localhost:8081
-# - Frontend on http://localhost:8080
-```
-
-### Run Separately
-
-**Backend only:**
-```bash
-cd backend
+# Run development environment (Concurrent Backend + Frontend)
 npm run dev
 ```
 
-**Frontend only:**
-```bash
-cd frontend
-npm run dev
-```
+## 📄 License
 
-### Production Mode
-
-**Build frontend:**
-```bash
-npm run build
-```
-
-**Start both in production:**
-```bash
-npm run start
-```
-
-## 🌐 Access the Application
-
-- **Frontend**: http://localhost:8080
-- **Backend API**: http://localhost:8081
-- **API Health Check**: http://localhost:8081/api/health
-
-## 📡 API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout user
-
-### Customers
-- `GET /api/customers` - Get all customers
-- `GET /api/customers/:id` - Get customer by ID
-- `POST /api/customers` - Create customer
-- `PUT /api/customers/:id` - Update customer
-- `DELETE /api/customers/:id` - Delete customer
-
-### Invoices
-- `GET /api/invoices` - Get all invoices
-- `GET /api/invoices/:id` - Get invoice by ID
-- `POST /api/invoices` - Create invoice
-- `PUT /api/invoices/:id` - Update invoice
-- `DELETE /api/invoices/:id` - Delete invoice
-
-### Payments
-- `GET /api/payments` - Get all payments
-- `GET /api/payments/:id` - Get payment by ID
-- `POST /api/payments` - Create payment
+ISC - Designed by **LokalISP Team**
+"Jangan Ambil Pusing" - ISP Management Simplified.
 
 ## 🧪 Testing
 

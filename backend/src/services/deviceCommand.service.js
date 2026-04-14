@@ -38,6 +38,19 @@ const DeviceCommandService = {
     const res = await db.query(query, values);
     return res.rows[0] || null;
   },
+
+  async getPending(limit = 10) {
+    const query = `
+      SELECT dc.*, d.acs_device_id
+      FROM device_commands dc
+      JOIN devices d ON dc.device_id = d.id
+      WHERE dc.status = 'pending'
+      ORDER BY dc.created_at ASC
+      LIMIT $1
+    `;
+    const res = await db.query(query, [limit]);
+    return res.rows;
+  },
 };
 
 module.exports = DeviceCommandService;

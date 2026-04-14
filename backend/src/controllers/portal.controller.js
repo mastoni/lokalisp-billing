@@ -1,7 +1,7 @@
 const SettingService = require('../services/setting.service');
 const CustomerService = require('../services/customer.service');
-const DeviceCommandService = require('../services/deviceCommand.service');
-const { getDevices, setWifiPasswordAuto } = require('../integrations/genieacs.client');
+const DeviceService = require('../services/device.service');
+const IntegrationService = require('../services/integration.service');
 const { getDeviceProfile } = require('../integrations/acsDeviceProfiles');
 
 function extractValue(node) {
@@ -55,13 +55,11 @@ const getMyModem = async (req, res) => {
         data: {
           customer,
           modem: null,
-          message: 'acs_device_id not configured for this customer',
+          message: 'Device not yet mapped to your account. Please wait for sync or contact support.',
         },
       });
     }
 
-    const cfg = await SettingService.getCategoryMap('genieacs');
-    const query = JSON.stringify({ _id: customer.acs_device_id });
     const projection = [
       '_id',
       '_lastInform',
@@ -78,7 +76,11 @@ const getMyModem = async (req, res) => {
       'Device.WiFi.SSID.2.SSID',
     ].join(',');
 
-    const devices = await getDevices(cfg, { query, projection, limit: '1' });
+    const devices = await IntegrationService.getAcsDevices({ 
+      query: JSON.stringify({ _id: customer.acs_device_id }), 
+      projection, 
+      limit: '1' 
+    });
     const d = Array.isArray(devices) ? devices[0] : null;
 
     if (!d) {
@@ -87,7 +89,7 @@ const getMyModem = async (req, res) => {
         data: {
           customer,
           modem: null,
-          message: 'Device not found in GenieACS',
+          message: 'Device offline or not found in ACS',
         },
       });
     }
@@ -122,34 +124,42 @@ const getMyModem = async (req, res) => {
   }
 };
 
+const rebootModem = async (req, res) => {
+  try {
+    const customer = await resolveCurrentCustomer(req);
+    if (!customer || !customer.acs_device_id) {
+      return res.status(404).json({ success: false, message: 'Modem not found or not mapped' });
+    }
+
+    const cmd = await DeviceService.queueCommand(customer.device_id, 'reboot');
+    return res.json({ success: true, message: 'Reboot command queued', data: { command: cmd } });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to queue reboot',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
+
 const changeWifiPassword = async (req, res) => {
   try {
-    const { password, ssid, connection_request } = req.body || {};
+    const { password, ssid } = req.body || {};
     if (!password || String(password).length < 8) {
       return res.status(400).json({ success: false, message: 'Password minimal 8 karakter' });
     }
 
     const customer = await resolveCurrentCustomer(req);
-    if (!customer) return res.status(404).json({ success: false, message: 'Customer profile not found' });
-    if (!customer.acs_device_id) return res.status(400).json({ success: false, message: 'acs_device_id belum diset' });
+    if (!customer || !customer.acs_device_id) {
+      return res.status(404).json({ success: false, message: 'Modem not found or not mapped' });
+    }
 
-    const cfg = await SettingService.getCategoryMap('genieacs');
-    const result = await setWifiPasswordAuto(
-      cfg,
-      customer.acs_device_id,
-      { password: String(password), ssid: ssid ? String(ssid) : undefined },
-      { connection_request: Boolean(connection_request) }
-    );
-
-    const cmd = await DeviceCommandService.create({
-      device_id: null,
-      command_name: 'acs.set_wifi_password',
-      payload: { acs_device_id: customer.acs_device_id, ssid: ssid || null },
-      status: 'pending',
-      result,
+    const cmd = await DeviceService.queueCommand(customer.device_id, 'set_wifi', {
+      password: String(password),
+      ssid: ssid ? String(ssid) : undefined
     });
 
-    return res.json({ success: true, message: 'Command queued', data: { command: cmd } });
+    return res.json({ success: true, message: 'WiFi update command queued', data: { command: cmd } });
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -159,4 +169,4 @@ const changeWifiPassword = async (req, res) => {
   }
 };
 
-module.exports = { getMyModem, changeWifiPassword };
+module.exports = { getMyModem, rebootModem, changeWifiPassword };

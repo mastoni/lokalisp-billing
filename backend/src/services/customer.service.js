@@ -140,6 +140,17 @@ const CustomerService = {
     const result = await db.query(query, [acsDeviceId, at]);
     return result.rowCount || 0;
   },
+
+  async updateAcsMappingBySerialNumber(serialNumber, acsDeviceId) {
+    const query = `
+      UPDATE customers
+      SET acs_device_id = $2, updated_at = CURRENT_TIMESTAMP
+      WHERE ont_serial_number = $1 AND (acs_device_id IS NULL OR acs_device_id <> $2)
+      RETURNING id
+    `;
+    const result = await db.query(query, [serialNumber, acsDeviceId]);
+    return result.rowCount || 0;
+  },
 };
 
 module.exports = CustomerService;

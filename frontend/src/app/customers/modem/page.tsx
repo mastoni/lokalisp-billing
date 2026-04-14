@@ -89,6 +89,23 @@ export default function CustomerModemPage() {
     }
   };
 
+  const handleReboot = async () => {
+    if (!confirm('Apakah hAnda yakin ingin me-reboot modem? Koneksi internet akan terputus selama beberapa menit.')) return;
+    try {
+      setLoading(true);
+      const res = await api.post('/portal/me/modem/reboot');
+      if (res.data.success) {
+        toast.success('Perintah reboot antre. Modem akan segera restart.');
+      } else {
+        toast.error(res.data.message || 'Gagal mengirim perintah');
+      }
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const modem = data?.modem || null;
 
   return (
@@ -99,15 +116,26 @@ export default function CustomerModemPage() {
         accent="primary"
       />
 
-      <div className="flex justify-end mb-6">
-        <button
-          onClick={load}
-          disabled={loading}
-          className="flex items-center px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition text-sm disabled:opacity-50"
-        >
-          <RefreshCcw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-bold text-gray-900">Kontrol Perangkat</h2>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleReboot}
+            disabled={loading || !modem}
+            className="flex items-center px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition text-sm disabled:opacity-50"
+          >
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            Reboot
+          </button>
+          <button
+            onClick={load}
+            disabled={loading}
+            className="flex items-center px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition text-sm disabled:opacity-50"
+          >
+            <RefreshCcw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       <SectionCard title="Perangkat Terpasang" className="mb-6">

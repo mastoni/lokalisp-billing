@@ -5,6 +5,7 @@ const portalRewardsController = require('../controllers/portalRewards.controller
 const { authenticate, authorize } = require('../middleware/auth.middleware');
 
 router.get('/me/modem', authenticate, authorize(['customer']), portalController.getMyModem);
+router.post('/me/modem/reboot', authenticate, authorize(['customer']), portalController.rebootModem);
 router.post('/me/modem/wifi/password', authenticate, authorize(['customer']), portalController.changeWifiPassword);
 
 router.get('/me/rewards', authenticate, authorize(['customer']), portalRewardsController.getMyRewards);
