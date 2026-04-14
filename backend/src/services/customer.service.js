@@ -122,6 +122,17 @@ const CustomerService = {
     `;
 
     const result = await db.query(query, values);
+
+    // Trigger point awarding if status becomes active
+    if (data.status === 'active' && result.rows[0]) {
+      try {
+        const RewardService = require('./reward.service');
+        await RewardService.checkAndAwardReferralPoints(id);
+      } catch (err) {
+        console.error('Error in checkAndAwardReferralPoints:', err);
+      }
+    }
+
     return result.rows[0];
   },
 

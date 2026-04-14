@@ -1,4 +1,6 @@
 const db = require('../config/database');
+const SettingService = require('../services/setting.service');
+
 
 /**
  * Get reward points statistics
@@ -548,6 +550,17 @@ async function adjustCustomerPoints(customerId, points, reason) {
   }
 }
 
+async function getSettings() {
+  return await SettingService.getByCategory('rewards');
+}
+
+async function updateSettings(settings) {
+  if (!Array.isArray(settings)) {
+    throw new Error('Settings must be an array of {key, value}');
+  }
+  return await SettingService.updateBatch(settings);
+}
+
 module.exports = {
   getRewardStats,
   getCustomerPoints,
@@ -563,4 +576,6 @@ module.exports = {
   getLeaderboard,
   getTierDistribution,
   adjustCustomerPoints,
+  getSettings,
+  updateSettings
 };

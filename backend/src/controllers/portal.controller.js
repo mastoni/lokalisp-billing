@@ -2,6 +2,9 @@ const SettingService = require('../services/setting.service');
 const CustomerService = require('../services/customer.service');
 const DeviceService = require('../services/device.service');
 const IntegrationService = require('../services/integration.service');
+const InvoiceService = require('../services/invoice.service');
+const PaymentService = require('../services/payment.service');
+const RewardService = require('../services/reward.service');
 const { getDeviceProfile } = require('../integrations/acsDeviceProfiles');
 
 function extractValue(node) {
@@ -169,4 +172,64 @@ const changeWifiPassword = async (req, res) => {
   }
 };
 
-module.exports = { getMyModem, rebootModem, changeWifiPassword };
+const getSummary = async (req, res) => {
+  try {
+    const customer = await resolveCurrentCustomer(req);
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Customer profile not found' });
+    }
+
+    // Get active invoice
+    const invoices = await InvoiceService.getAllInvoices({ customer_id: customer.id, status: 'pending' });
+    const activeInvoice = invoices.length > 0 ? invoices[0] : null;
+
+    // Get reward points
+    const rewards = await RewardService.getCustomerRewards(customer.id);
+
+    return res.json({
+      success: true,
+      data: {
+        customer: {
+          id: customer.id,
+          name: customer.name,
+          package_name: customer.package_name,
+          status: customer.status,
+          expiry_date: customer.expiry_date,
+        },
+        activeInvoice,
+        rewardPoints: rewards.points_balance || 0,
+        totalPaid: customer.total_paid || 0,
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to load summary',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
+
+const getMyInvoices = async (req, res) => {
+  try {
+    const customer = await resolveCurrentCustomer(req);
+    if (!customer) return res.status(404).json({ success: false, message: 'Customer not found' });
+    const invoices = await InvoiceService.getAllInvoices({ customer_id: customer.id });
+    return res.json({ success: true, data: invoices });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch invoices' });
+  }
+};
+
+const getMyPayments = async (req, res) => {
+  try {
+    const customer = await resolveCurrentCustomer(req);
+    if (!customer) return res.status(404).json({ success: false, message: 'Customer not found' });
+    const payments = await PaymentService.getAllPayments({ customer_id: customer.id });
+    return res.json({ success: true, data: payments });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch payments' });
+  }
+};
+
+module.exports = { getMyModem, rebootModem, changeWifiPassword, getSummary, getMyInvoices, getMyPayments };

@@ -254,4 +254,38 @@ router.post('/customers/:id/adjust', async (req, res) => {
   }
 });
 
+// Get reward settings
+router.get('/settings', async (req, res) => {
+  try {
+    const settings = await rewardController.getSettings();
+    res.json({
+      success: true,
+      data: settings,
+    });
+  } catch (error) {
+    console.error('Get reward settings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch reward settings',
+    });
+  }
+});
+
+// Update reward settings
+router.post('/settings', async (req, res) => {
+  try {
+    const result = await rewardController.updateSettings(req.body.settings);
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('Update reward settings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update reward settings',
+    });
+  }
+});
+
 module.exports = router;

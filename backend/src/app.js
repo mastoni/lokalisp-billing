@@ -14,6 +14,9 @@ const settingRoutes = require('./routes/setting.route');
 const integrationRoutes = require('./routes/integration.route');
 const webhookRoutes = require('./routes/webhook.route');
 const portalRoutes = require('./routes/portal.route');
+const userRoutes = require('./routes/user.route');
+const technicianRoutes = require('./routes/technician.route');
+const agentRoutes = require('./routes/agent.route');
 
 const app = express();
 const PORT = process.env.PORT || 8081;
@@ -46,6 +49,9 @@ app.use('/api/settings', settingRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/portal', portalRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/technician', technicianRoutes);
+app.use('/api/agent', agentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

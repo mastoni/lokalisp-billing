@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const CustomerService = require('../services/customer.service');
+const RewardService = require('../services/reward.service');
 
 async function resolveCurrentCustomer(req) {
   return CustomerService.findCustomerForUser({
@@ -9,29 +10,33 @@ async function resolveCurrentCustomer(req) {
   });
 }
 
-async function ensureRewardAccount(client, customerId) {
-  await client.query(
-    `INSERT INTO reward_points (customer_id)
-     VALUES ($1)
-     ON CONFLICT (customer_id) DO NOTHING`,
-    [customerId]
-  );
-}
-
 const getMyRewards = async (req, res) => {
   const client = await db.connect();
   try {
     const customer = await resolveCurrentCustomer(req);
     if (!customer) return res.status(404).json({ success: false, message: 'Customer profile not found' });
 
-    await ensureRewardAccount(client, customer.id);
-
+    // Include referral_code from customers table
     const rp = await client.query(
-      `SELECT customer_id, points_balance, total_points_earned, total_points_redeemed, redemption_count, tier, status, last_activity
-       FROM reward_points
-       WHERE customer_id = $1`,
+      `SELECT rp.*, c.referral_code
+       FROM reward_points rp
+       JOIN customers c ON rp.customer_id = c.id
+       WHERE rp.customer_id = $1`,
       [customer.id]
     );
+
+    if (rp.rows.length === 0) {
+      // Initialize if missing
+      await client.query('INSERT INTO reward_points (customer_id) VALUES ($1)', [customer.id]);
+      const newRp = await client.query(
+        `SELECT rp.*, c.referral_code
+         FROM reward_points rp
+         JOIN customers c ON rp.customer_id = c.id
+         WHERE rp.customer_id = $1`, 
+        [customer.id]
+      );
+      return res.json({ success: true, data: newRp.rows[0] });
+    }
 
     return res.json({ success: true, data: rp.rows[0] });
   } catch (error) {
@@ -50,8 +55,6 @@ const getMyRewardTransactions = async (req, res) => {
   try {
     const customer = await resolveCurrentCustomer(req);
     if (!customer) return res.status(404).json({ success: false, message: 'Customer profile not found' });
-
-    await ensureRewardAccount(client, customer.id);
 
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const offset = parseInt(req.query.offset) || 0;
@@ -99,7 +102,6 @@ const getRewardCatalog = async (req, res) => {
 };
 
 const redeemReward = async (req, res) => {
-  const client = await db.connect();
   try {
     const customer = await resolveCurrentCustomer(req);
     if (!customer) return res.status(404).json({ success: false, message: 'Customer profile not found' });
@@ -107,77 +109,55 @@ const redeemReward = async (req, res) => {
     const { reward_id } = req.body || {};
     if (!reward_id) return res.status(400).json({ success: false, message: 'reward_id is required' });
 
-    await client.query('BEGIN');
-
-    await ensureRewardAccount(client, customer.id);
-
-    const rewardRes = await client.query(
-      `SELECT id, name, points_cost, is_active
-       FROM reward_redemptions
-       WHERE id = $1`,
-      [reward_id]
-    );
-    const reward = rewardRes.rows[0];
-    if (!reward || !reward.is_active) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ success: false, message: 'Reward not available' });
-    }
-
-    const rpRes = await client.query(
-      `SELECT points_balance
-       FROM reward_points
-       WHERE customer_id = $1
-       FOR UPDATE`,
-      [customer.id]
-    );
-    const balance = parseInt(rpRes.rows[0]?.points_balance || 0);
-    const cost = parseInt(reward.points_cost);
-
-    if (balance < cost) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ success: false, message: 'Insufficient points' });
-    }
-
-    const reqRes = await client.query(
-      `INSERT INTO redemption_requests (customer_id, reward_id, points_spent, status)
-       VALUES ($1, $2, $3, 'pending')
-       RETURNING *`,
-      [customer.id, reward.id, cost]
-    );
-    const redemptionRequest = reqRes.rows[0];
-
-    await client.query(
-      `UPDATE reward_points
-       SET points_balance = points_balance - $1,
-           total_points_redeemed = total_points_redeemed + $1,
-           redemption_count = redemption_count + 1,
-           last_activity = NOW(),
-           updated_at = NOW()
-       WHERE customer_id = $2`,
-      [cost, customer.id]
-    );
-
-    await client.query(
-      `INSERT INTO reward_transactions (customer_id, transaction_type, points, description, reference_type, reference_id)
-       VALUES ($1, 'redeem', $2, $3, 'redemption_request', $4)`,
-      [customer.id, cost, `Redeem: ${reward.name}`, redemptionRequest.id]
-    );
-
-    await client.query('COMMIT');
-
-    return res.json({ success: true, data: redemptionRequest });
+    const result = await RewardService.requestRedemption(customer.id, reward_id);
+    return res.json({ success: true, data: result });
   } catch (error) {
-    try {
-      await client.query('ROLLBACK');
-    } catch {
-    }
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      message: 'Failed to redeem reward',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      message: error.message,
     });
-  } finally {
-    client.release();
+  }
+};
+
+const transferPoints = async (req, res) => {
+  try {
+    const customer = await resolveCurrentCustomer(req);
+    if (!customer) return res.status(404).json({ success: false, message: 'Customer profile not found' });
+
+    const { target, amount, note } = req.body || {};
+    if (!target || !amount) {
+      return res.status(400).json({ success: false, message: 'Target and amount are required' });
+    }
+
+    const result = await RewardService.transferPoints(customer.id, target, parseInt(amount), note);
+    return res.json({ 
+      success: true, 
+      message: `Berhasil mengirim ${amount} poin ke ${result.targetName}` 
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const referCustomer = async (req, res) => {
+  try {
+    const customer = await resolveCurrentCustomer(req);
+    if (!customer) return res.status(404).json({ success: false, message: 'Customer profile not found' });
+
+    const result = await RewardService.referCustomer(customer.id, req.body);
+    return res.json({ 
+      success: true, 
+      message: 'Pelanggan baru berhasil didaftarkan. Poin akan diberikan setelah aktivasi.',
+      data: result 
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -216,5 +196,6 @@ module.exports = {
   getRewardCatalog,
   redeemReward,
   getMyRedemptions,
+  transferPoints,
+  referCustomer
 };
-

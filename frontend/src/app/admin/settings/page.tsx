@@ -12,7 +12,8 @@ import {
   ShieldCheck,
   Server,
   Smartphone,
-  Info
+  Info,
+  Gift
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
@@ -44,6 +45,7 @@ const categories = [
   { id: 'whatsapp', name: 'WhatsApp', icon: MessageSquare },
   { id: 'genieacs', name: 'GenieACS', icon: Globe },
   { id: 'radius', name: 'RADIUS', icon: ShieldCheck },
+  { id: 'rewards', name: 'Rewards', icon: Gift },
 ];
 
 export default function SettingsPage() {

@@ -1,5 +1,10 @@
 const SettingService = require('./setting.service');
-const { testGenieAcs } = require('../integrations/genieacs.client');
+const { 
+  testGenieAcs, 
+  getDevices, 
+  reboot, 
+  setWifiPasswordAuto 
+} = require('../integrations/genieacs.client');
 const { testMikroTik } = require('../integrations/mikrotik.client');
 const { testRadius } = require('../integrations/radius.client');
 
@@ -41,12 +46,5 @@ const IntegrationService = {
     return await setWifiPasswordAuto(cfg, acsDeviceId, params, { connection_request: true });
   },
 };
-
-const { 
-  testGenieAcs, 
-  getDevices, 
-  reboot, 
-  setWifiPasswordAuto 
-} = require('../integrations/genieacs.client');
 
 module.exports = IntegrationService;

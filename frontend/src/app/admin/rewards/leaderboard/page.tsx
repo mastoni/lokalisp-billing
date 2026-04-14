@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import {
   Trophy,
   Star,
@@ -19,359 +20,398 @@ import {
   Award,
   Zap,
   Target,
-  BarChart3
+  BarChart3,
+  RefreshCw,
+  LayoutGrid,
+  List,
+  Eye,
+  Send,
+  MessageCircle,
+  ChevronRight,
+  X,
+  Phone,
+  MapPin,
+  Package
 } from 'lucide-react';
+import api from '@/lib/api';
 
-// Mock leaderboard data
-const leaderboardData = [
-  { rank: 1, name: 'Ahmad Rizki', email: 'ahmad@email.com', points: 4520, tier: 'Platinum', totalSpent: 'Rp 12.500.000', monthsActive: 18, redemptions: 8, avatar: 'AR' },
-  { rank: 2, name: 'Budi Santoso', email: 'budi@email.com', points: 3890, tier: 'Gold', totalSpent: 'Rp 10.800.000', monthsActive: 15, redemptions: 6, avatar: 'BS' },
-  { rank: 3, name: 'Siti Nurhaliza', email: 'siti@email.com', points: 2750, tier: 'Gold', totalSpent: 'Rp 8.400.000', monthsActive: 12, redemptions: 5, avatar: 'SN' },
-  { rank: 4, name: 'Eko Prasetyo', email: 'eko@email.com', points: 2650, tier: 'Gold', totalSpent: 'Rp 9.200.000', monthsActive: 14, redemptions: 7, avatar: 'EP' },
-  { rank: 5, name: 'Dewi Lestari', email: 'dewi@email.com', points: 1980, tier: 'Silver', totalSpent: 'Rp 6.800.000', monthsActive: 10, redemptions: 4, avatar: 'DL' },
-  { rank: 6, name: 'Fitriani', email: 'fitri@email.com', points: 1850, tier: 'Silver', totalSpent: 'Rp 7.200.000', monthsActive: 11, redemptions: 3, avatar: 'FN' },
-  { rank: 7, name: 'Gunawan', email: 'gunawan@email.com', points: 1650, tier: 'Silver', totalSpent: 'Rp 5.900.000', monthsActive: 9, redemptions: 2, avatar: 'GW' },
-  { rank: 8, name: 'Hana Pertiwi', email: 'hana@email.com', points: 1520, tier: 'Silver', totalSpent: 'Rp 6.100.000', monthsActive: 10, redemptions: 4, avatar: 'HP' },
-  { rank: 9, name: 'Irfan Hakim', email: 'irfan@email.com', points: 1380, tier: 'Bronze', totalSpent: 'Rp 4.800.000', monthsActive: 8, redemptions: 2, avatar: 'IH' },
-  { rank: 10, name: 'Jasmine Putri', email: 'jasmine@email.com', points: 1250, tier: 'Bronze', totalSpent: 'Rp 5.200.000', monthsActive: 9, redemptions: 3, avatar: 'JP' },
-  { rank: 11, name: 'Kevin Anggara', email: 'kevin@email.com', points: 1120, tier: 'Bronze', totalSpent: 'Rp 4.500.000', monthsActive: 7, redemptions: 1, avatar: 'KA' },
-  { rank: 12, name: 'Linda Susanti', email: 'linda@email.com', points: 980, tier: 'Bronze', totalSpent: 'Rp 3.900.000', monthsActive: 6, redemptions: 2, avatar: 'LS' },
-  { rank: 13, name: 'Michael Tan', email: 'michael@email.com', points: 890, tier: 'Bronze', totalSpent: 'Rp 4.100.000', monthsActive: 7, redemptions: 1, avatar: 'MT' },
-  { rank: 14, name: 'Nadia Rahma', email: 'nadia@email.com', points: 760, tier: 'Bronze', totalSpent: 'Rp 3.200.000', monthsActive: 5, redemptions: 1, avatar: 'NR' },
-  { rank: 15, name: 'Oscar Pratama', email: 'oscar@email.com', points: 650, tier: 'Bronze', totalSpent: 'Rp 2.800.000', monthsActive: 4, redemptions: 0, avatar: 'OP' },
-];
-
-const tierDistribution = [
-  { tier: 'Platinum', count: 2, percentage: 1, color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
-  { tier: 'Gold', count: 45, percentage: 16, color: 'from-yellow-500 to-yellow-600', bgColor: 'bg-yellow-100', textColor: 'text-yellow-700' },
-  { tier: 'Silver', count: 98, percentage: 34, color: 'from-slate-400 to-slate-500', bgColor: 'bg-slate-100', textColor: 'text-slate-700' },
-  { tier: 'Bronze', count: 144, percentage: 49, color: 'from-amber-600 to-amber-700', bgColor: 'bg-amber-100', textColor: 'text-amber-700' },
-];
-
-const topPerformers = [
-  { metric: 'Most Active', name: 'Ahmad Rizki', value: '18 months', icon: Calendar },
-  { metric: 'Highest Spender', name: 'Ahmad Rizki', value: 'Rp 12.5M', icon: TrendingUp },
-  { metric: 'Most Redemptions', name: 'Eko Prasetyo', value: '7 times', icon: Gift },
-  { metric: 'Fastest to Platinum', name: 'Ahmad Rizki', value: '8 months', icon: Zap },
-];
+type LeaderboardItem = {
+  rank: number;
+  id: string;
+  name: string;
+  email: string;
+  points: number;
+  tier: string;
+  total_spent?: number;
+  months_active?: number;
+  redemption_count?: number;
+  phone?: string;
+  address?: string;
+};
 
 export default function LeaderboardPage() {
+  const [data, setData] = useState<LeaderboardItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
-  const filteredData = leaderboardData.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTier = tierFilter ? item.tier === tierFilter : true;
-    return matchesSearch && matchesTier;
-  });
+  // New Modal States
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<LeaderboardItem | null>(null);
+  const [message, setMessage] = useState('');
+
+  const fetchLeaderboard = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/rewards/leaderboard');
+      if (response.data.success) {
+        setData(response.data.data.items || []);
+      }
+    } catch (error: any) {
+      toast.error('Gagal mengambil data: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, []);
+
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      const matchesSearch =
+        (item.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesTier = tierFilter ? item.tier === tierFilter : true;
+      return matchesSearch && matchesTier;
+    });
+  }, [data, searchTerm, tierFilter]);
+
+  const handleViewProfile = (user: LeaderboardItem) => {
+    setSelectedUser(user);
+    setShowProfileModal(true);
+  };
+
+  const handleOpenChat = (user: LeaderboardItem) => {
+    setSelectedUser(user);
+    setShowMessageModal(true);
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+    
+    toast.loading('Mengirim pesan...', { id: 'send-msg' });
+    setTimeout(() => {
+       toast.success(`Pesan terkirim ke ${selectedUser?.name}`, { id: 'send-msg' });
+       setMessage('');
+       setShowMessageModal(false);
+    }, 1000);
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-3 mb-2">
-            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-600 shadow-lg">
-              <Trophy className="w-7 h-7 text-white" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-600 shadow-lg text-white font-black">
+              <Trophy className="w-7 h-7" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Leaderboard</h1>
-              <p className="text-slate-600">Top customers by reward points and engagement</p>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight">Leaderboard</h1>
+              <p className="text-slate-500 font-medium tracking-tight">Pelanggan terbaik berdasarkan point dan loyalitas</p>
             </div>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center bg-white border border-slate-300 rounded-xl overflow-hidden">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={fetchLeaderboard}
+            className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 shadow-sm hover:bg-slate-50 transition-all font-bold"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <div className="flex items-center bg-white border border-slate-200 rounded-2xl overflow-hidden p-1 shadow-sm">
             <button
               onClick={() => setViewMode('list')}
-              className={`px-4 py-2 transition-colors ${
-                viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-slate-50'
+              className={`p-2 transition-all rounded-xl ${
+                viewMode === 'list' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
-              <BarChart3 className="w-4 h-4" />
+              <List size={20} />
             </button>
             <button
               onClick={() => setViewMode('grid')}
-              className={`px-4 py-2 transition-colors ${
-                viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-slate-50'
+              className={`p-2 transition-all rounded-xl ${
+                viewMode === 'grid' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
-              <Users className="w-4 h-4" />
+              <LayoutGrid size={20} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Top Performers */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {topPerformers.map((performer, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200 hover:shadow-xl transition-all"
-          >
-            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 mb-4">
-              <performer.icon className="w-6 h-6 text-white" />
-            </div>
-            <p className="text-sm text-slate-600 mb-1">{performer.metric}</p>
-            <p className="text-lg font-bold text-slate-900 mb-1">{performer.name}</p>
-            <p className="text-sm text-blue-600 font-semibold">{performer.value}</p>
-          </div>
-        ))}
+      {/* Tier Filters UI */}
+      <div className="flex items-center p-1 bg-slate-100 rounded-2xl w-fit">
+         <button onClick={() => setTierFilter(null)} className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all uppercase ${!tierFilter ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>SEMUA</button>
+         {['Platinum', 'Gold', 'Silver', 'Bronze'].map(t => (
+           <button key={t} onClick={() => setTierFilter(t)} className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all uppercase ${tierFilter === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>
+             {t}
+           </button>
+         ))}
       </div>
 
-      {/* Top 3 Podium */}
-      <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 rounded-2xl shadow-lg p-8 border border-purple-200">
-        <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">🏆 Top 3 Champions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-          {/* 2nd Place */}
-          <div className="order-2 md:order-1">
-            <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-slate-300">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 mx-auto mb-4">
-                <Medal className="w-8 h-8 text-white" />
+      {/* Podium Section */}
+      {!loading && !tierFilter && searchTerm === '' && data.length >= 3 && viewMode === 'list' && (
+        <div className="bg-slate-50 rounded-[3rem] p-12 border border-slate-100 relative overflow-hidden shadow-inner">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+           <div className="flex flex-col md:flex-row items-end justify-center gap-8 md:gap-4 lg:gap-12 relative z-10">
+              {/* 2nd Place */}
+              <div className="order-2 md:order-1 flex-1 max-w-[280px]">
+                 <PodiumCard 
+                   rank={2} name={data[1].name} points={data[1].points} tier={data[1].tier}
+                   color="border-slate-300" icon={<Medal className="w-10 h-10 text-slate-400" />}
+                   onClick={() => handleViewProfile(data[1])}
+                 />
               </div>
-              <div className="text-center">
-                <p className="text-4xl font-bold text-slate-400 mb-2">#2</p>
-                <h3 className="text-xl font-bold text-slate-900 mb-1">{leaderboardData[1].name}</h3>
-                <div className="flex items-center justify-center text-yellow-500 mb-3">
-                  <Star className="w-4 h-4 mr-1" />
-                  <span className="text-2xl font-bold">{leaderboardData[1].points.toLocaleString()}</span>
+              {/* 1st Place */}
+              <div className="order-1 md:order-2 flex-1 max-w-[320px] transform md:-translate-y-8">
+                 <PodiumCard 
+                   rank={1} name={data[0].name} points={data[0].points} tier={data[0].tier}
+                   color="border-yellow-400 scale-110 shadow-2xl shadow-yellow-200" icon={<Crown className="w-12 h-12 text-yellow-500" />}
+                   onClick={() => handleViewProfile(data[0])}
+                 />
+              </div>
+              {/* 3rd Place */}
+              <div className="order-3 flex-1 max-w-[280px]">
+                 <PodiumCard 
+                   rank={3} name={data[2].name} points={data[2].points} tier={data[2].tier}
+                   color="border-amber-500" icon={<Award className="w-10 h-10 text-amber-600" />}
+                   onClick={() => handleViewProfile(data[2])}
+                 />
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* List / Grid Toggle */}
+      {viewMode === 'list' ? (
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden min-h-[400px]">
+          <div className="p-8 pb-4">
+             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <h2 className="text-2xl font-black text-slate-900">Database Leaderboard</h2>
+                <div className="flex items-center px-4 py-3 bg-slate-50 rounded-2xl border border-transparent focus-within:border-slate-200 transition-all shadow-sm">
+                    <Search className="w-5 h-5 text-slate-400 mr-3" />
+                    <input type="text" placeholder="Cari pelanggan..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-transparent border-none outline-none text-sm font-bold w-full md:w-64" />
                 </div>
-                <TierBadge tier={leaderboardData[1].tier} />
-              </div>
-            </div>
+             </div>
           </div>
 
-          {/* 1st Place */}
-          <div className="order-1 md:order-2">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 border-2 border-yellow-400 transform md:-translate-y-4">
-              <div className="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 mx-auto mb-4">
-                <Crown className="w-10 h-10 text-white" />
-              </div>
-              <div className="text-center">
-                <p className="text-5xl font-bold text-yellow-500 mb-2">#1</p>
-                <h3 className="text-2xl font-bold text-slate-900 mb-1">{leaderboardData[0].name}</h3>
-                <div className="flex items-center justify-center text-yellow-500 mb-3">
-                  <Star className="w-5 h-5 mr-1" />
-                  <span className="text-3xl font-bold">{leaderboardData[0].points.toLocaleString()}</span>
-                </div>
-                <TierBadge tier={leaderboardData[0].tier} />
-              </div>
-            </div>
-          </div>
-
-          {/* 3rd Place */}
-          <div className="order-3">
-            <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-amber-600">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 mx-auto mb-4">
-                <Award className="w-8 h-8 text-white" />
-              </div>
-              <div className="text-center">
-                <p className="text-4xl font-bold text-amber-600 mb-2">#3</p>
-                <h3 className="text-xl font-bold text-slate-900 mb-1">{leaderboardData[2].name}</h3>
-                <div className="flex items-center justify-center text-yellow-500 mb-3">
-                  <Star className="w-4 h-4 mr-1" />
-                  <span className="text-2xl font-bold">{leaderboardData[2].points.toLocaleString()}</span>
-                </div>
-                <TierBadge tier={leaderboardData[2].tier} />
-              </div>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100">
+               <thead>
+                 <tr className="bg-slate-50/50">
+                    <th className="text-left py-4 px-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rank</th>
+                    <th className="text-left py-4 px-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Pelanggan</th>
+                    <th className="text-left py-4 px-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Point</th>
+                    <th className="text-left py-4 px-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tier</th>
+                    <th className="text-left py-4 px-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktivitas</th>
+                    <th className="text-right py-4 px-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Aksi</th>
+                 </tr>
+               </thead>
+               <tbody className="divide-y divide-slate-100">
+                  {loading ? (
+                     [...Array(5)].map((_, i) => <tr key={i}><td colSpan={6} className="py-8 px-8"><div className="h-4 bg-slate-100 rounded-full animate-pulse w-3/4"></div></td></tr>)
+                  ) : filteredData.length === 0 ? (
+                    <tr><td colSpan={6} className="py-24 text-center font-bold text-slate-300 uppercase tracking-widest text-xs">Data tidak ditemukan</td></tr>
+                  ) : (
+                    filteredData.map((item, idx) => (
+                      <tr key={item.id} className="group hover:bg-slate-50 transition-all">
+                         <td className="py-5 px-8"><RankIcon rank={item.rank || idx + 1} /></td>
+                         <td className="py-5 px-8">
+                            <div className="flex items-center gap-3">
+                               <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-800 font-black text-xs uppercase group-hover:bg-purple-600 group-hover:text-white transition-all">{item.name.substring(0, 2)}</div>
+                               <div><p className="text-sm font-black text-slate-900 group-hover:text-purple-700 transition-colors leading-tight">{item.name}</p><p className="text-[10px] font-medium text-slate-400">{item.email}</p></div>
+                            </div>
+                         </td>
+                         <td className="py-5 px-8 font-black text-purple-600 text-base">{Number(item.points).toLocaleString()}</td>
+                         <td className="py-5 px-8"><TierBadge tier={item.tier} /></td>
+                         <td className="py-5 px-8 text-xs font-bold text-slate-500 uppercase tracking-tight">{item.months_active || 0} bln aktif</td>
+                         <td className="py-5 px-8 text-right">
+                            <div className="flex items-center justify-end space-x-2 opacity-30 group-hover:opacity-100 transition-all">
+                               <button onClick={() => handleViewProfile(item)} className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm"><Eye size={16} /></button>
+                               <button onClick={() => handleOpenChat(item)} className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"><MessageCircle size={16} /></button>
+                            </div>
+                         </td>
+                      </tr>
+                    ))
+                  )}
+               </tbody>
+            </table>
           </div>
         </div>
-      </div>
-
-      {/* Tier Distribution */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
-        <h2 className="text-xl font-bold text-slate-900 mb-6">Tier Distribution</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {tierDistribution.map((tier) => (
-            <div
-              key={tier.tier}
-              className={`p-6 rounded-xl bg-gradient-to-br ${tier.color} text-white`}
-            >
-              <h3 className="text-xl font-bold mb-2">{tier.tier}</h3>
-              <p className="text-4xl font-bold mb-2">{tier.count}</p>
-              <p className="text-white/80 text-sm">{tier.percentage}% of customers</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {loading ? (
+            [...Array(8)].map((_, i) => <div key={i} className="h-64 bg-slate-100 rounded-[2.5rem] animate-pulse"></div>)
+          ) : filteredData.map((item, idx) => (
+            <div key={item.id} className="bg-white rounded-[3rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all group flex flex-col items-center">
+               <div className="flex justify-between items-center w-full mb-6">
+                  <RankIcon rank={item.rank || idx + 1} />
+                  <TierBadge tier={item.tier} />
+               </div>
+               <div className="w-20 h-20 rounded-[2rem] bg-slate-50 flex items-center justify-center text-slate-400 mb-4 group-hover:bg-purple-600 group-hover:text-white transition-all duration-500 shadow-inner">
+                  <User size={40} />
+               </div>
+               <h3 className="text-lg font-black text-slate-900 mb-1 line-clamp-1">{item.name}</h3>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">{item.tier}</p>
+               <div className="bg-purple-50 px-6 py-2 rounded-2xl flex items-center mb-8 border border-purple-100">
+                  <Star className="w-4 h-4 text-purple-600 mr-2 fill-purple-600" />
+                  <span className="text-xl font-black text-purple-600">{Number(item.points).toLocaleString()}</span>
+               </div>
+               <div className="grid grid-cols-2 gap-3 w-full">
+                  <button onClick={() => handleViewProfile(item)} className="py-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-900 hover:text-white transition-all font-black text-[10px] tracking-widest uppercase flex items-center justify-center gap-2">
+                     <Eye size={14} /> PROFILE
+                  </button>
+                  <button onClick={() => handleOpenChat(item)} className="py-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-emerald-600 hover:text-white transition-all font-black text-[10px] tracking-widest uppercase flex items-center justify-center gap-2">
+                     <MessageCircle size={14} /> CHAT
+                  </button>
+               </div>
             </div>
           ))}
         </div>
-      </div>
+      )}
 
-      {/* Full Leaderboard */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-slate-900">Full Leaderboard</h2>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center px-4 py-2 bg-slate-100 rounded-xl">
-              <Search className="w-4 h-4 text-slate-400 mr-2" />
-              <input
-                type="text"
-                placeholder="Search customers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm w-64"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              {['Platinum', 'Gold', 'Silver', 'Bronze'].map((tier) => (
-                <button
-                  key={tier}
-                  onClick={() => setTierFilter(tierFilter === tier ? null : tier)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    tierFilter === tier
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  {tier}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {viewMode === 'list' ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Rank</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Customer</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Points</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Tier</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Total Spent</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Redemptions</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Months</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredData.map((item) => (
-                  <tr key={item.rank} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 px-4">
-                      <RankBadge rank={item.rank} />
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
-                          <span className="text-white font-bold text-sm">{item.avatar}</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-slate-900">{item.name}</p>
-                          <p className="text-xs text-slate-500">{item.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center text-purple-600">
-                        <Star className="w-4 h-4 mr-1" />
-                        <span className="text-sm font-bold">{item.points.toLocaleString()}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <TierBadge tier={item.tier} />
-                    </td>
-                    <td className="py-3 px-4 text-sm font-semibold text-slate-900">{item.totalSpent}</td>
-                    <td className="py-3 px-4 text-sm text-slate-600">{item.redemptions}</td>
-                    <td className="py-3 px-4 text-sm text-slate-600">{item.monthsActive}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredData.map((item) => (
-              <div
-                key={item.rank}
-                className="p-6 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-200 hover:shadow-lg transition-all"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <RankBadge rank={item.rank} />
-                  <TierBadge tier={item.tier} />
-                </div>
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
-                    <span className="text-white font-bold">{item.avatar}</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900">{item.name}</h3>
-                    <p className="text-xs text-slate-500">{item.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center text-purple-600">
-                    <Star className="w-5 h-5 mr-1" />
-                    <span className="text-xl font-bold">{item.points.toLocaleString()}</span>
-                  </div>
-                  <span className="text-sm text-slate-500">points</span>
-                </div>
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200">
-                  <div>
-                    <p className="text-xs text-slate-500">Total Spent</p>
-                    <p className="text-sm font-semibold text-slate-900">{item.totalSpent}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Redemptions</p>
-                    <p className="text-sm font-semibold text-slate-900">{item.redemptions}</p>
-                  </div>
-                </div>
+      {/* Profile Modal */}
+      {showProfileModal && selectedUser && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+           <div className="bg-white rounded-[3rem] shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in duration-300">
+              <div className="relative h-24 bg-gradient-to-r from-purple-600 to-indigo-700 p-6 flex justify-end">
+                 <button onClick={() => setShowProfileModal(false)} className="p-2 bg-white/20 text-white rounded-full"><X size={20} /></button>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              <div className="px-10 pb-10">
+                 <div className="relative -mt-12 mb-6">
+                    <div className="w-24 h-24 rounded-[2rem] bg-white p-1 shadow-xl">
+                       <div className="w-full h-full rounded-[1.8rem] bg-slate-50 flex items-center justify-center text-3xl font-black text-slate-900">{selectedUser.name.charAt(0)}</div>
+                    </div>
+                 </div>
+                 <h2 className="text-3xl font-black text-slate-900 mb-1 tracking-tight">{selectedUser.name}</h2>
+                 <div className="flex items-center gap-2 mb-10">
+                    <TierBadge tier={selectedUser.tier} />
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{selectedUser.id}</span>
+                 </div>
+
+                 <div className="grid grid-cols-1 gap-6 mb-10">
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400"><Mail size={20} /></div>
+                       <div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">EMAIL ADDRESS</p><p className="text-sm font-bold text-slate-700">{selectedUser.email}</p></div>
+                    </div>
+                    {selectedUser.phone && (
+                      <div className="flex items-center gap-4">
+                         <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400"><Phone size={20} /></div>
+                         <div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">PHONE NUMBER</p><p className="text-sm font-bold text-slate-700">{selectedUser.phone}</p></div>
+                      </div>
+                    )}
+                 </div>
+
+                 <div className="grid grid-cols-3 gap-4">
+                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col items-center">
+                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">PTS</p>
+                       <p className="text-lg font-black text-purple-600">{Number(selectedUser.points).toLocaleString()}</p>
+                    </div>
+                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col items-center">
+                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">REDEEM</p>
+                       <p className="text-lg font-black text-blue-600">{selectedUser.redemption_count || 0}</p>
+                    </div>
+                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col items-center">
+                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">MONTHS</p>
+                       <p className="text-lg font-black text-emerald-600">{selectedUser.months_active || 1}</p>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Message Modal */}
+      {showMessageModal && selectedUser && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+           <div className="bg-white rounded-[3rem] shadow-2xl max-w-md w-full p-10 animate-in fade-in zoom-in duration-300">
+              <div className="flex items-center justify-between mb-8">
+                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">Kirim Pesan</h2>
+                 <button onClick={() => setShowMessageModal(false)} className="p-2 hover:bg-slate-50 rounded-full text-slate-400"><X size={24} /></button>
+              </div>
+              <div className="flex items-center gap-3 mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                 <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-black text-xs">{selectedUser.name.charAt(0)}</div>
+                 <div><p className="text-sm font-black text-slate-900">{selectedUser.name}</p><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedUser.tier}</p></div>
+              </div>
+              <form onSubmit={handleSendMessage} className="space-y-6">
+                 <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Isi Pesan</label>
+                    <textarea 
+                      required
+                      rows={4}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl font-bold text-sm resize-none focus:ring-2 focus:ring-purple-500 transition-all shadow-inner"
+                      placeholder="Masukkan pesan ke pelanggan..."
+                    />
+                 </div>
+                 <button type="submit" className="w-full bg-slate-900 text-white py-5 rounded-[2.5rem] font-black text-lg hover:bg-purple-600 transition-all shadow-xl shadow-purple-100 flex items-center justify-center gap-2">
+                    <Send size={20} /> KIRIM SEKARANG
+                 </button>
+              </form>
+           </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// Rank Badge Component
-function RankBadge({ rank }: { rank: number }) {
-  if (rank === 1) {
-    return (
-      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500">
-        <span className="text-white font-bold">#{rank}</span>
-      </div>
-    );
-  }
-  if (rank === 2) {
-    return (
-      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-slate-400 to-slate-500">
-        <span className="text-white font-bold">#{rank}</span>
-      </div>
-    );
-  }
-  if (rank === 3) {
-    return (
-      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-amber-600 to-amber-700">
-        <span className="text-white font-bold">#{rank}</span>
-      </div>
-    );
-  }
+function PodiumCard({ rank, name, points, tier, color, icon, onClick }: any) {
   return (
-    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-200">
-      <span className="text-slate-700 font-bold">#{rank}</span>
-    </div>
+    <button onClick={onClick} className={`w-full bg-white rounded-[2.5rem] p-8 border-2 ${color} text-center flex flex-col items-center transition-all duration-500 shadow-sm hover:shadow-xl hover:-translate-y-2 group`}>
+       <div className="mb-6 group-hover:scale-110 transition-transform duration-500">{icon}</div>
+       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Rank #{rank}</p>
+       <h3 className="text-xl font-black text-slate-900 leading-tight mb-4 group-hover:text-purple-600 transition-colors">{name}</h3>
+       <div className="bg-purple-50 px-6 py-2 rounded-2xl flex items-center mb-4 border border-purple-100/50">
+          <Star className="w-4 h-4 text-purple-600 mr-2 fill-purple-600" />
+          <span className="text-xl font-black text-purple-600">{points.toLocaleString()}</span>
+       </div>
+       <TierBadge tier={tier} />
+    </button>
   );
 }
 
-// Tier Badge Component
-function TierBadge({ tier }: { tier: string }) {
-  const tierConfig = {
-    Platinum: { bg: 'bg-purple-100', text: 'text-purple-700', gradient: 'from-purple-500 to-purple-600' },
-    Gold: { bg: 'bg-yellow-100', text: 'text-yellow-700', gradient: 'from-yellow-500 to-yellow-600' },
-    Silver: { bg: 'bg-slate-100', text: 'text-slate-700', gradient: 'from-slate-400 to-slate-500' },
-    Bronze: { bg: 'bg-amber-100', text: 'text-amber-700', gradient: 'from-amber-600 to-amber-700' },
+function RankIcon({ rank }: { rank: number }) {
+  const styles: any = {
+    1: 'bg-yellow-500 text-white shadow-yellow-200 ring-2 ring-yellow-400/20',
+    2: 'bg-slate-400 text-white shadow-slate-100 ring-2 ring-slate-300/20',
+    3: 'bg-amber-600 text-white shadow-amber-100 ring-2 ring-amber-500/20',
   };
-
-  const config = tierConfig[tier as keyof typeof tierConfig];
-
   return (
-    <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text}`}
-    >
-      <Star className="w-3 h-3 mr-1" />
+    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm shadow-xl ${styles[rank] || 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
+       #{rank}
+    </div>
+  );
+}
+
+function TierBadge({ tier }: { tier: string }) {
+  const tiers: any = {
+    Platinum: { bg: 'bg-purple-50', text: 'text-purple-600', icon: Crown },
+    Gold: { bg: 'bg-yellow-50', text: 'text-yellow-600', icon: Star },
+    Silver: { bg: 'bg-slate-50', text: 'text-slate-400', icon: Medal },
+    Bronze: { bg: 'bg-amber-50', text: 'text-amber-700', icon: Target },
+  };
+  const config = tiers[tier] || tiers.Bronze;
+  const Icon = config.icon;
+  return (
+    <span className={`inline-flex items-center px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase ${config.bg} ${config.text}`}>
+      <Icon className="w-3 h-3 mr-2" />
       {tier}
     </span>
   );
