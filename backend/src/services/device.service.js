@@ -54,6 +54,16 @@ const DeviceService = {
     await db.query(query, [id]);
     return true;
   },
+
+  async touchLastSeenByAcsDeviceId(acsDeviceId, at = new Date()) {
+    const query = `
+      UPDATE devices
+      SET last_seen = $2, updated_at = CURRENT_TIMESTAMP
+      WHERE acs_device_id = $1
+    `;
+    const result = await db.query(query, [acsDeviceId, at]);
+    return result.rowCount || 0;
+  },
 };
 
 module.exports = DeviceService;

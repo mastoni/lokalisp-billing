@@ -27,7 +27,7 @@ const CustomerService = {
     }
 
     query += ' ORDER BY c.created_at DESC';
-    
+
     const result = await db.query(query, params);
     return result.rows;
   },
@@ -41,6 +41,52 @@ const CustomerService = {
     `;
     const result = await db.query(query, [id]);
     return result.rows[0] || null;
+  },
+
+  async getCustomerByEmail(email) {
+    const query = `
+      SELECT c.*, d.name as router_name, d.type as router_type, d.ip_address as router_ip
+      FROM customers c
+      LEFT JOIN devices d ON c.device_id = d.id
+      WHERE c.email = $1
+      LIMIT 1
+    `;
+    const result = await db.query(query, [email]);
+    return result.rows[0] || null;
+  },
+
+  async findCustomerForUser({ email, full_name, phone }) {
+    if (email) {
+      const byEmail = await this.getCustomerByEmail(email);
+      if (byEmail) return byEmail;
+    }
+
+    if (phone) {
+      const query = `
+        SELECT c.*, d.name as router_name, d.type as router_type, d.ip_address as router_ip
+        FROM customers c
+        LEFT JOIN devices d ON c.device_id = d.id
+        WHERE c.phone = $1
+        LIMIT 1
+      `;
+      const res = await db.query(query, [phone]);
+      if (res.rows[0]) return res.rows[0];
+    }
+
+    if (full_name) {
+      const query = `
+        SELECT c.*, d.name as router_name, d.type as router_type, d.ip_address as router_ip
+        FROM customers c
+        LEFT JOIN devices d ON c.device_id = d.id
+        WHERE c.name ILIKE $1
+        ORDER BY c.created_at DESC
+        LIMIT 1
+      `;
+      const res = await db.query(query, [`%${full_name}%`]);
+      if (res.rows[0]) return res.rows[0];
+    }
+
+    return null;
   },
 
   async createCustomer(data) {
@@ -69,12 +115,12 @@ const CustomerService = {
 
     values.push(id);
     const query = `
-      UPDATE customers 
+      UPDATE customers
       SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP
       WHERE id = $${idx}
       RETURNING *
     `;
-    
+
     const result = await db.query(query, values);
     return result.rows[0];
   },
@@ -83,6 +129,16 @@ const CustomerService = {
     const query = 'DELETE FROM customers WHERE id = $1';
     await db.query(query, [id]);
     return true;
+  },
+
+  async touchLastSeenByAcsDeviceId(acsDeviceId, at = new Date()) {
+    const query = `
+      UPDATE customers
+      SET last_seen = $2, updated_at = CURRENT_TIMESTAMP
+      WHERE acs_device_id = $1
+    `;
+    const result = await db.query(query, [acsDeviceId, at]);
+    return result.rowCount || 0;
   },
 };
 

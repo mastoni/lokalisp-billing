@@ -153,6 +153,42 @@ async function createEarningRule(ruleData) {
 }
 
 /**
+ * Update earning rule
+ */
+async function updateEarningRule(id, ruleData) {
+  const client = await db.connect();
+  
+  try {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    for (const [key, value] of Object.entries(ruleData || {})) {
+      if (!['action_name', 'points', 'description', 'is_active'].includes(key)) continue;
+      fields.push(`${key} = $${idx++}`);
+      values.push(value);
+    }
+
+    if (fields.length === 0) return null;
+
+    values.push(id);
+    const result = await client.query(
+      `
+      UPDATE reward_earning_rules
+      SET ${fields.join(', ')}, updated_at = NOW()
+      WHERE id = $${idx}
+      RETURNING *
+      `,
+      values
+    );
+
+    return result.rows[0] || null;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Get redemption rewards
  */
 async function getRedemptionRewards() {
@@ -163,6 +199,24 @@ async function getRedemptionRewards() {
       SELECT * FROM reward_redemptions
       WHERE is_active = true
       ORDER BY points_cost ASC
+    `);
+    
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Get all redemption rewards (admin)
+ */
+async function getAllRedemptionRewards() {
+  const client = await db.connect();
+  
+  try {
+    const result = await client.query(`
+      SELECT * FROM reward_redemptions
+      ORDER BY is_active DESC, points_cost ASC
     `);
     
     return result.rows;
@@ -187,6 +241,42 @@ async function createRedemptionReward(rewardData) {
     `, [name, description, points_cost, category, is_active !== false]);
     
     return result.rows[0];
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Update redemption reward
+ */
+async function updateRedemptionReward(id, rewardData) {
+  const client = await db.connect();
+  
+  try {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    for (const [key, value] of Object.entries(rewardData || {})) {
+      if (!['name', 'description', 'points_cost', 'category', 'is_active'].includes(key)) continue;
+      fields.push(`${key} = $${idx++}`);
+      values.push(value);
+    }
+
+    if (fields.length === 0) return null;
+
+    values.push(id);
+    const result = await client.query(
+      `
+      UPDATE reward_redemptions
+      SET ${fields.join(', ')}, updated_at = NOW()
+      WHERE id = $${idx}
+      RETURNING *
+      `,
+      values
+    );
+
+    return result.rows[0] || null;
   } finally {
     client.release();
   }
@@ -463,8 +553,11 @@ module.exports = {
   getCustomerPoints,
   getEarningRules,
   createEarningRule,
+  updateEarningRule,
   getRedemptionRewards,
+  getAllRedemptionRewards,
   createRedemptionReward,
+  updateRedemptionReward,
   getRedemptions,
   processRedemption,
   getLeaderboard,

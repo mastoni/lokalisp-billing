@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const rewardController = require('../controllers/reward.controller');
+const { authenticate, authorize } = require('../middleware/auth.middleware');
+
+router.use(authenticate, authorize(['admin']));
 
 // Get reward statistics
 router.get('/stats', async (req, res) => {
@@ -74,10 +77,25 @@ router.post('/earning-rules', async (req, res) => {
   }
 });
 
+// Update earning rule
+router.patch('/earning-rules/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const rule = await rewardController.updateEarningRule(id, req.body);
+    if (!rule) {
+      return res.status(400).json({ success: false, message: 'Nothing to update' });
+    }
+    res.json({ success: true, data: rule });
+  } catch (error) {
+    console.error('Update earning rule error:', error);
+    res.status(500).json({ success: false, message: 'Failed to update earning rule' });
+  }
+});
+
 // Get redemption rewards
 router.get('/rewards', async (req, res) => {
   try {
-    const rewards = await rewardController.getRedemptionRewards();
+    const rewards = await rewardController.getAllRedemptionRewards();
     res.json({
       success: true,
       data: rewards,
@@ -105,6 +123,21 @@ router.post('/rewards', async (req, res) => {
       success: false,
       message: 'Failed to create redemption reward',
     });
+  }
+});
+
+// Update redemption reward
+router.patch('/rewards/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reward = await rewardController.updateRedemptionReward(id, req.body);
+    if (!reward) {
+      return res.status(400).json({ success: false, message: 'Nothing to update' });
+    }
+    res.json({ success: true, data: reward });
+  } catch (error) {
+    console.error('Update redemption reward error:', error);
+    res.status(500).json({ success: false, message: 'Failed to update redemption reward' });
   }
 });
 

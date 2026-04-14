@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import {
   Gift,
   Star,
@@ -20,16 +21,7 @@ import {
   Save,
   X
 } from 'lucide-react';
-
-// Mock data for reward points overview
-const rewardStats = {
-  totalPointsIssued: '1,245,600',
-  totalPointsRedeemed: '892,340',
-  totalPointsOutstanding: '353,260',
-  activeMembers: '289',
-  redemptionRate: '71.6%',
-  avgPointsPerCustomer: '1,221',
-};
+import api from '@/lib/api';
 
 // Mock data for customer points
 const customerPoints = [
@@ -51,35 +43,106 @@ const rewardTiers = [
   { name: 'Platinum', minPoints: 5000, color: 'from-purple-500 to-purple-600', borderColor: 'border-purple-500', benefits: '20% bonus points + Exclusive offers + Dedicated support' },
 ];
 
-// Earning rules
-const earningRules = [
-  { id: 1, action: 'Monthly subscription payment', points: 100, description: 'Points earned per Rp 10,000 spent' },
-  { id: 2, action: 'On-time payment bonus', points: 50, description: 'Bonus for paying before due date' },
-  { id: 3, action: 'Referral bonus', points: 500, description: 'When referred customer signs up' },
-  { id: 4, action: 'Annual subscription', points: 1000, description: 'Bonus for yearly payment' },
-  { id: 5, action: 'New service activation', points: 200, description: 'Activating additional services' },
-];
+type RewardStats = {
+  totalPointsIssued: number;
+  totalPointsRedeemed: number;
+  totalPointsOutstanding: number;
+  activeMembers: number;
+  redemptionRate: string;
+  avgPointsPerCustomer: number;
+};
 
-// Redemption rewards
-const redemptionRewards = [
-  { id: 1, name: '1 Month Free Basic', pointsCost: 5000, category: 'Service Credit', description: 'Get one month of Basic plan free' },
-  { id: 2, name: '1 Month Free Premium', pointsCost: 10000, category: 'Service Credit', description: 'Get one month of Premium plan free' },
-  { id: 3, name: 'Speed Upgrade (1 month)', pointsCost: 3000, category: 'Upgrade', description: 'Upgrade your speed tier for one month' },
-  { id: 4, name: 'Data Recovery Service', pointsCost: 2000, category: 'Service', description: 'One-time data recovery assistance' },
-  { id: 5, name: 'Router Upgrade', pointsCost: 8000, category: 'Equipment', description: 'Free router upgrade and installation' },
-  { id: 6, name: 'Bill Discount Rp 100K', pointsCost: 4000, category: 'Discount', description: 'Rp 100,000 discount on next bill' },
-  { id: 7, name: 'Bill Discount Rp 250K', pointsCost: 9000, category: 'Discount', description: 'Rp 250,000 discount on next bill' },
-  { id: 8, name: 'Free Installation', pointsCost: 6000, category: 'Service', description: 'Free new installation service' },
-];
+type EarningRule = {
+  id: number;
+  action_name: string;
+  points: number;
+  description: string;
+  is_active: boolean;
+};
+
+type RedemptionReward = {
+  id: string;
+  name: string;
+  description: string;
+  points_cost: number;
+  category: string;
+  is_active: boolean;
+};
 
 export default function RewardsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'customers' | 'rules' | 'rewards'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddRuleModal, setShowAddRuleModal] = useState(false);
+  const [showAddRewardModal, setShowAddRewardModal] = useState(false);
+
+  const [stats, setStats] = useState<RewardStats | null>(null);
+  const [rules, setRules] = useState<EarningRule[]>([]);
+  const [rewards, setRewards] = useState<RedemptionReward[]>([]);
+  const [loadingRules, setLoadingRules] = useState(false);
+  const [loadingRewards, setLoadingRewards] = useState(false);
+  const [savingRule, setSavingRule] = useState(false);
+  const [savingReward, setSavingReward] = useState(false);
+
+  const [newRule, setNewRule] = useState({ action_name: '', points: '0', description: '', is_active: true });
+  const [newReward, setNewReward] = useState({ name: '', points_cost: '0', category: '', description: '', is_active: true });
 
   const filteredCustomers = customerPoints.filter(
     (c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const loadStats = async () => {
+    try {
+      const res = await api.get('/rewards/stats');
+      if (res.data.success) setStats(res.data.data);
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || e.message);
+    }
+  };
+
+  const loadRules = async () => {
+    try {
+      setLoadingRules(true);
+      const res = await api.get('/rewards/earning-rules');
+      if (res.data.success) setRules(res.data.data || []);
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || e.message);
+    } finally {
+      setLoadingRules(false);
+    }
+  };
+
+  const loadRewards = async () => {
+    try {
+      setLoadingRewards(true);
+      const res = await api.get('/rewards/rewards');
+      if (res.data.success) setRewards(res.data.data || []);
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || e.message);
+    } finally {
+      setLoadingRewards(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'rules') loadRules();
+    if (activeTab === 'rewards') loadRewards();
+  }, [activeTab]);
+
+  const statsText = useMemo(() => {
+    const s = stats;
+    return {
+      totalPointsIssued: s ? s.totalPointsIssued.toLocaleString() : '-',
+      totalPointsRedeemed: s ? s.totalPointsRedeemed.toLocaleString() : '-',
+      totalPointsOutstanding: s ? s.totalPointsOutstanding.toLocaleString() : '-',
+      activeMembers: s ? s.activeMembers.toLocaleString() : '-',
+      redemptionRate: s ? s.redemptionRate : '-',
+      avgPointsPerCustomer: s ? s.avgPointsPerCustomer.toLocaleString() : '-',
+    };
+  }, [stats]);
 
   return (
     <div className="space-y-8">
@@ -132,7 +195,7 @@ export default function RewardsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <StatCard
               title="Total Points Issued"
-              value={rewardStats.totalPointsIssued}
+              value={statsText.totalPointsIssued}
               change="+12.5%"
               trend="up"
               icon={Star}
@@ -140,7 +203,7 @@ export default function RewardsPage() {
             />
             <StatCard
               title="Total Points Redeemed"
-              value={rewardStats.totalPointsRedeemed}
+              value={statsText.totalPointsRedeemed}
               change="+8.3%"
               trend="up"
               icon={Gift}
@@ -148,7 +211,7 @@ export default function RewardsPage() {
             />
             <StatCard
               title="Points Outstanding"
-              value={rewardStats.totalPointsOutstanding}
+              value={statsText.totalPointsOutstanding}
               change="-2.1%"
               trend="down"
               icon={TrendingUp}
@@ -156,7 +219,7 @@ export default function RewardsPage() {
             />
             <StatCard
               title="Active Members"
-              value={rewardStats.activeMembers}
+              value={statsText.activeMembers}
               change="+5"
               trend="up"
               icon={Users}
@@ -164,7 +227,7 @@ export default function RewardsPage() {
             />
             <StatCard
               title="Redemption Rate"
-              value={rewardStats.redemptionRate}
+              value={statsText.redemptionRate}
               change="+3.2%"
               trend="up"
               icon={ArrowUpRight}
@@ -172,7 +235,7 @@ export default function RewardsPage() {
             />
             <StatCard
               title="Avg Points/Customer"
-              value={rewardStats.avgPointsPerCustomer}
+              value={statsText.avgPointsPerCustomer}
               change="+15"
               trend="up"
               icon={Star}
@@ -315,7 +378,12 @@ export default function RewardsPage() {
             </button>
           </div>
           <div className="space-y-4">
-            {earningRules.map((rule) => (
+            {loadingRules ? (
+              <div className="text-sm text-slate-600">Loading...</div>
+            ) : rules.length === 0 ? (
+              <div className="text-sm text-slate-600">No rules.</div>
+            ) : (
+              rules.map((rule) => (
               <div
                 key={rule.id}
                 className="p-6 bg-gradient-to-r from-slate-50 to-white rounded-xl border border-slate-200 hover:shadow-md transition-shadow"
@@ -327,8 +395,9 @@ export default function RewardsPage() {
                         <Star className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-slate-900">{rule.action}</h3>
+                        <h3 className="text-lg font-semibold text-slate-900">{rule.action_name}</h3>
                         <p className="text-sm text-slate-600">{rule.description}</p>
+                        <p className="text-xs text-slate-500">{rule.is_active ? 'Active' : 'Inactive'}</p>
                       </div>
                     </div>
                   </div>
@@ -338,9 +407,6 @@ export default function RewardsPage() {
                       <p className="text-2xl font-bold text-blue-600">{rule.points}</p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-600">
-                        <Edit className="w-4 h-4" />
-                      </button>
                       <button className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-red-600">
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -348,7 +414,8 @@ export default function RewardsPage() {
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -358,13 +425,21 @@ export default function RewardsPage() {
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-900">Redemption Rewards</h2>
-            <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all font-medium shadow-lg shadow-purple-500/30">
+            <button
+              onClick={() => setShowAddRewardModal(true)}
+              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all font-medium shadow-lg shadow-purple-500/30"
+            >
               <Plus className="w-4 h-4 inline mr-2" />
               Add Reward
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {redemptionRewards.map((reward) => (
+            {loadingRewards ? (
+              <div className="text-sm text-slate-600">Loading...</div>
+            ) : rewards.length === 0 ? (
+              <div className="text-sm text-slate-600">No rewards.</div>
+            ) : (
+              rewards.map((reward) => (
               <div
                 key={reward.id}
                 className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200 hover:shadow-lg transition-all"
@@ -382,21 +457,19 @@ export default function RewardsPage() {
                 <div className="flex items-center justify-between pt-4 border-t border-purple-200">
                   <div className="flex items-center text-purple-600">
                     <Star className="w-4 h-4 mr-1" />
-                    <span className="text-lg font-bold">{reward.pointsCost.toLocaleString()}</span>
+                    <span className="text-lg font-bold">{Number(reward.points_cost).toLocaleString()}</span>
                   </div>
                   <span className="text-xs text-slate-500">points</span>
                 </div>
+                <div className="text-xs text-slate-500 mt-2">{reward.is_active ? 'Active' : 'Inactive'}</div>
                 <div className="flex items-center space-x-2 mt-4">
-                  <button className="flex-1 px-3 py-2 bg-white border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors text-sm font-medium">
-                    <Edit className="w-4 h-4 inline mr-1" />
-                    Edit
-                  </button>
                   <button className="px-3 py-2 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -414,12 +487,41 @@ export default function RewardsPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form className="space-y-4">
+            <form
+              className="space-y-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  setSavingRule(true);
+                  const body = {
+                    action_name: newRule.action_name,
+                    points: Number(newRule.points || 0),
+                    description: newRule.description,
+                    is_active: newRule.is_active,
+                  };
+                  const res = await api.post('/rewards/earning-rules', body);
+                  if (res.data.success) {
+                    toast.success('Rule created');
+                    setShowAddRuleModal(false);
+                    setNewRule({ action_name: '', points: '0', description: '', is_active: true });
+                    await loadRules();
+                  } else {
+                    toast.error(res.data.message || 'Failed');
+                  }
+                } catch (err: any) {
+                  toast.error(err.response?.data?.message || err.message);
+                } finally {
+                  setSavingRule(false);
+                }
+              }}
+            >
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Action Name</label>
                 <input
                   type="text"
                   placeholder="e.g., Monthly subscription payment"
+                  value={newRule.action_name}
+                  onChange={(e) => setNewRule((p) => ({ ...p, action_name: e.target.value }))}
                   className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -428,6 +530,8 @@ export default function RewardsPage() {
                 <input
                   type="number"
                   placeholder="100"
+                  value={newRule.points}
+                  onChange={(e) => setNewRule((p) => ({ ...p, points: e.target.value }))}
                   className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -436,9 +540,20 @@ export default function RewardsPage() {
                 <textarea
                   placeholder="Describe when and how points are earned..."
                   rows={3}
+                  value={newRule.description}
+                  onChange={(e) => setNewRule((p) => ({ ...p, description: e.target.value }))}
                   className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
+              <label className="flex items-center text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={newRule.is_active}
+                  onChange={(e) => setNewRule((p) => ({ ...p, is_active: e.target.checked }))}
+                  className="mr-2"
+                />
+                Active
+              </label>
               <div className="flex items-center justify-end space-x-3 pt-4">
                 <button
                   type="button"
@@ -449,10 +564,119 @@ export default function RewardsPage() {
                 </button>
                 <button
                   type="submit"
+                  disabled={savingRule}
                   className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-medium"
                 >
                   <Save className="w-4 h-4 inline mr-2" />
-                  Save Rule
+                  {savingRule ? 'Saving...' : 'Save Rule'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showAddRewardModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-slate-900">Add Redemption Reward</h2>
+              <button
+                onClick={() => setShowAddRewardModal(false)}
+                className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form
+              className="space-y-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  setSavingReward(true);
+                  const body = {
+                    name: newReward.name,
+                    points_cost: Number(newReward.points_cost || 0),
+                    category: newReward.category,
+                    description: newReward.description,
+                    is_active: newReward.is_active,
+                  };
+                  const res = await api.post('/rewards/rewards', body);
+                  if (res.data.success) {
+                    toast.success('Reward created');
+                    setShowAddRewardModal(false);
+                    setNewReward({ name: '', points_cost: '0', category: '', description: '', is_active: true });
+                    await loadRewards();
+                  } else {
+                    toast.error(res.data.message || 'Failed');
+                  }
+                } catch (err: any) {
+                  toast.error(err.response?.data?.message || err.message);
+                } finally {
+                  setSavingReward(false);
+                }
+              }}
+            >
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
+                <input
+                  type="text"
+                  value={newReward.name}
+                  onChange={(e) => setNewReward((p) => ({ ...p, name: e.target.value }))}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Points Cost</label>
+                <input
+                  type="number"
+                  value={newReward.points_cost}
+                  onChange={(e) => setNewReward((p) => ({ ...p, points_cost: e.target.value }))}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                <input
+                  type="text"
+                  value={newReward.category}
+                  onChange={(e) => setNewReward((p) => ({ ...p, category: e.target.value }))}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                <textarea
+                  rows={3}
+                  value={newReward.description}
+                  onChange={(e) => setNewReward((p) => ({ ...p, description: e.target.value }))}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+              <label className="flex items-center text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={newReward.is_active}
+                  onChange={(e) => setNewReward((p) => ({ ...p, is_active: e.target.checked }))}
+                  className="mr-2"
+                />
+                Active
+              </label>
+              <div className="flex items-center justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddRewardModal(false)}
+                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingReward}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all font-medium"
+                >
+                  <Save className="w-4 h-4 inline mr-2" />
+                  {savingReward ? 'Saving...' : 'Save Reward'}
                 </button>
               </div>
             </form>

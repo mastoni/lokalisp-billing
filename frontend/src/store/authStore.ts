@@ -35,24 +35,53 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   token: null,
   isAuthenticated: false,
 
-  setUser: (user) => set({ user }),
+  setUser: (user) => {
+    try {
+      if (typeof window !== 'undefined') {
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        } else {
+          localStorage.removeItem('user');
+        }
+      }
+    } catch {
+    }
+    set({ user });
+  },
   
   setToken: (token) => {
-    if (token) {
-      localStorage.setItem('token', token);
-    } else {
-      localStorage.removeItem('token');
+    try {
+      if (typeof window !== 'undefined') {
+        if (token) {
+          localStorage.setItem('token', token);
+        } else {
+          localStorage.removeItem('token');
+        }
+      }
+    } catch {
     }
     set({ token });
   },
 
   login: (user, token) => {
-    localStorage.setItem('token', token);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+    } catch {
+    }
     set({ user, token, isAuthenticated: true });
   },
 
   logout: () => {
-    localStorage.removeItem('token');
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    } catch {
+    }
     set({ user: null, token: null, isAuthenticated: false });
   },
 
