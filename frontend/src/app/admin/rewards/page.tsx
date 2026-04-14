@@ -33,14 +33,14 @@ const rewardStats = {
 
 // Mock data for customer points
 const customerPoints = [
-  { id: 1, name: 'Ahmad Rizki', email: 'ahmad@email.com', points: 4520, tier: 'Gold', status: 'active', lastActivity: '2026-04-14' },
-  { id: 2, name: 'Budi Santoso', email: 'budi@email.com', points: 3890, tier: 'Gold', status: 'active', lastActivity: '2026-04-13' },
-  { id: 3, name: 'Siti Nurhaliza', email: 'siti@email.com', points: 2750, tier: 'Silver', status: 'active', lastActivity: '2026-04-12' },
-  { id: 4, name: 'Dewi Lestari', email: 'dewi@email.com', points: 1980, tier: 'Silver', status: 'active', lastActivity: '2026-04-11' },
-  { id: 5, name: 'Eko Prasetyo', email: 'eko@email.com', points: 1650, tier: 'Bronze', status: 'active', lastActivity: '2026-04-10' },
-  { id: 6, name: 'Fitriani', email: 'fitri@email.com', points: 1200, tier: 'Bronze', status: 'active', lastActivity: '2026-04-09' },
-  { id: 7, name: 'Gunawan', email: 'gunawan@email.com', points: 890, tier: 'Bronze', status: 'inactive', lastActivity: '2026-03-15' },
-  { id: 8, name: 'Hana Pertiwi', email: 'hana@email.com', points: 560, tier: 'Bronze', status: 'inactive', lastActivity: '2026-02-20' },
+  { id: 1, name: 'Ahmad Rizki', email: 'ahmad@email.com', points: 4520, tier: 'Gold', status: 'active' as const, lastActivity: '2026-04-14' },
+  { id: 2, name: 'Budi Santoso', email: 'budi@email.com', points: 3890, tier: 'Gold', status: 'active' as const, lastActivity: '2026-04-13' },
+  { id: 3, name: 'Siti Nurhaliza', email: 'siti@email.com', points: 2750, tier: 'Silver', status: 'active' as const, lastActivity: '2026-04-12' },
+  { id: 4, name: 'Dewi Lestari', email: 'dewi@email.com', points: 1980, tier: 'Silver', status: 'active' as const, lastActivity: '2026-04-11' },
+  { id: 5, name: 'Eko Prasetyo', email: 'eko@email.com', points: 1650, tier: 'Bronze', status: 'active' as const, lastActivity: '2026-04-10' },
+  { id: 6, name: 'Fitriani', email: 'fitri@email.com', points: 1200, tier: 'Bronze', status: 'active' as const, lastActivity: '2026-04-09' },
+  { id: 7, name: 'Gunawan', email: 'gunawan@email.com', points: 890, tier: 'Bronze', status: 'inactive' as const, lastActivity: '2026-03-15' },
+  { id: 8, name: 'Hana Pertiwi', email: 'hana@email.com', points: 560, tier: 'Bronze', status: 'inactive' as const, lastActivity: '2026-02-20' },
 ];
 
 // Reward tiers configuration

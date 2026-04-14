@@ -26,42 +26,42 @@ const statsData = {
   totalRevenue: {
     value: 'Rp 125.450.000',
     change: '+12.5%',
-    trend: 'up',
+    trend: 'up' as const,
   },
   monthlyRevenue: {
     value: 'Rp 45.230.000',
     change: '+8.2%',
-    trend: 'up',
+    trend: 'up' as const,
   },
   activeCustomers: {
     value: '342',
     change: '+15',
-    trend: 'up',
+    trend: 'up' as const,
   },
   pendingInvoices: {
     value: '89',
     change: '-5',
-    trend: 'down',
+    trend: 'down' as const,
   },
   totalPayments: {
     value: '256',
     change: '+23',
-    trend: 'up',
+    trend: 'up' as const,
   },
   activePackages: {
     value: '8',
     change: '0',
-    trend: 'neutral',
+    trend: 'neutral' as const,
   },
 };
 
 const recentTransactions = [
-  { id: 'INV-001', customer: 'Ahmad Rizki', amount: 'Rp 350.000', status: 'paid', date: '2026-04-14', package: 'Premium 50Mbps' },
-  { id: 'INV-002', customer: 'Siti Nurhaliza', amount: 'Rp 250.000', status: 'pending', date: '2026-04-14', package: 'Standard 20Mbps' },
-  { id: 'INV-003', customer: 'Budi Santoso', amount: 'Rp 450.000', status: 'paid', date: '2026-04-13', package: 'Ultimate 100Mbps' },
-  { id: 'INV-004', customer: 'Dewi Lestari', amount: 'Rp 150.000', status: 'overdue', date: '2026-04-13', package: 'Basic 10Mbps' },
-  { id: 'INV-005', customer: 'Eko Prasetyo', amount: 'Rp 350.000', status: 'paid', date: '2026-04-12', package: 'Premium 50Mbps' },
-  { id: 'INV-006', customer: 'Fitriani', amount: 'Rp 250.000', status: 'pending', date: '2026-04-12', package: 'Standard 20Mbps' },
+  { id: 'INV-001', customer: 'Ahmad Rizki', amount: 'Rp 350.000', status: 'paid' as const, date: '2026-04-14', package: 'Premium 50Mbps' },
+  { id: 'INV-002', customer: 'Siti Nurhaliza', amount: 'Rp 250.000', status: 'pending' as const, date: '2026-04-14', package: 'Standard 20Mbps' },
+  { id: 'INV-003', customer: 'Budi Santoso', amount: 'Rp 450.000', status: 'paid' as const, date: '2026-04-13', package: 'Ultimate 100Mbps' },
+  { id: 'INV-004', customer: 'Dewi Lestari', amount: 'Rp 150.000', status: 'overdue' as const, date: '2026-04-13', package: 'Basic 10Mbps' },
+  { id: 'INV-005', customer: 'Eko Prasetyo', amount: 'Rp 350.000', status: 'paid' as const, date: '2026-04-12', package: 'Premium 50Mbps' },
+  { id: 'INV-006', customer: 'Fitriani', amount: 'Rp 250.000', status: 'pending' as const, date: '2026-04-12', package: 'Standard 20Mbps' },
 ];
 
 const topCustomers = [

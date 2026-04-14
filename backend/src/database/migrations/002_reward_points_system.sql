@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS reward_points (
     points_balance INTEGER DEFAULT 0 NOT NULL,
     total_points_earned INTEGER DEFAULT 0 NOT NULL,
     total_points_redeemed INTEGER DEFAULT 0 NOT NULL,
+    redemption_count INTEGER DEFAULT 0 NOT NULL,
     tier VARCHAR(50) DEFAULT 'Bronze' NOT NULL,
     status VARCHAR(50) DEFAULT 'active' NOT NULL,
     last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

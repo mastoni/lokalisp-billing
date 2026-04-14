@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'LokalISP Billing System',
-  description: 'ISP Billing and Management System',
+  title: 'LokalISP - ISP Billing & Management System',
+  description: 'The complete billing and management solution for Internet Service Providers. Automate invoicing, track payments, and grow your business.',
 };
 
 export default function RootLayout({

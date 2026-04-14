@@ -141,8 +141,8 @@ export default function AdminLayout({
                 <DollarSign className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">LokalISP</h1>
-                <p className="text-xs text-slate-400">Billing System</p>
+                <h1 className="text-xl md:text-2xl font-bold text-white">Billing Sembok</h1>
+                <p className="text-xs md:text-sm text-slate-400">Billing System</p>
               </div>
             </div>
           )}
@@ -169,7 +169,7 @@ export default function AdminLayout({
           {/* Main Navigation */}
           <div>
             {sidebarOpen && (
-              <p className="px-4 mb-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <p className="px-4 mb-3 text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">
                 Main
               </p>
             )}
@@ -185,7 +185,7 @@ export default function AdminLayout({
                   }`}
                 >
                   <item.icon className={`w-5 h-5 ${sidebarOpen ? 'mr-3' : 'mx-auto'}`} />
-                  {sidebarOpen && <span className="font-medium">{item.name}</span>}
+                  {sidebarOpen && <span className="font-medium text-sm md:text-base">{item.name}</span>}
                   {sidebarOpen && isActive(item.href) && (
                     <div className="ml-auto w-2 h-2 rounded-full bg-white" />
                   )}
@@ -213,7 +213,7 @@ export default function AdminLayout({
                   }`}
                 >
                   <item.icon className={`w-5 h-5 ${sidebarOpen ? 'mr-3' : 'mx-auto'}`} />
-                  {sidebarOpen && <span className="font-medium">{item.name}</span>}
+                  {sidebarOpen && <span className="font-medium text-sm md:text-base">{item.name}</span>}
                 </Link>
               ))}
             </div>
@@ -246,7 +246,7 @@ export default function AdminLayout({
                   }`}
                 >
                   <item.icon className={`w-5 h-5 ${sidebarOpen ? 'mr-3' : 'mx-auto'}`} />
-                  {sidebarOpen && <span className="font-medium">{item.name}</span>}
+                  {sidebarOpen && <span className="font-medium text-sm md:text-base">{item.name}</span>}
                   {sidebarOpen && isActive(item.href) && (
                     <div className="ml-auto w-2 h-2 rounded-full bg-white" />
                   )}
@@ -274,7 +274,7 @@ export default function AdminLayout({
                   }`}
                 >
                   <item.icon className={`w-5 h-5 ${sidebarOpen ? 'mr-3' : 'mx-auto'}`} />
-                  {sidebarOpen && <span className="font-medium">{item.name}</span>}
+                  {sidebarOpen && <span className="font-medium text-sm md:text-base">{item.name}</span>}
                 </Link>
               ))}
             </div>
@@ -289,8 +289,8 @@ export default function AdminLayout({
             </div>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">Admin</p>
-                <p className="text-xs text-slate-400 truncate">admin@lokalisp.id</p>
+                <p className="text-sm md:text-base font-semibold text-white truncate">Admin</p>
+                <p className="text-xs md:text-sm text-slate-400 truncate">admin@lokalisp.id</p>
               </div>
             )}
             {sidebarOpen && (
