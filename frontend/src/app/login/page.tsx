@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { authService } from '@/services/authService';
 import { Zap, User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,9 +13,19 @@ export default function LoginPage() {
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load remembered username
+  useEffect(() => {
+    const savedUsername = localStorage.getItem('remembered_username');
+    if (savedUsername) {
+      setUsername(savedUsername);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +33,13 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem('remembered_username', username);
+      } else {
+        localStorage.removeItem('remembered_username');
+      }
+
       const data = await authService.login({ username, password });
       login(data.user, data.token);
       
@@ -138,15 +156,17 @@ export default function LoginPage() {
                 <input
                   id="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 cursor-pointer">
                   Remember me
                 </label>
               </div>
-              <a href="#" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+              <Link href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             {/* Submit Button */}

@@ -102,7 +102,17 @@ export default function PaymentsPage() {
     e.preventDefault();
     try {
       setSaving(true);
-      const res = await api.post('/payments', formData);
+      const selectedInv = invoices.find(i => i.id === formData.invoiceId);
+      
+      const payload = {
+        invoice_id: formData.invoiceId,
+        customer_id: selectedInv?.customer_id,
+        amount: formData.amount,
+        method: formData.paymentMethod,
+        status: 'completed' // In admin dashboard, we usually assume it's completed immediately
+      };
+
+      const res = await api.post('/payments', payload);
       if (res.data.success) {
         toast.success('Pembayaran berhasil dicatat');
         setShowNewModal(false);
@@ -117,7 +127,7 @@ export default function PaymentsPage() {
 
   const handleConfirm = async (id: string) => {
     try {
-      const res = await api.post(`/payments/${id}/confirm`);
+      const res = await api.patch(`/payments/${id}/status`, { status: 'completed' });
       if (res.data.success) {
         toast.success('Pembayaran dikonfirmasi');
         fetchData();

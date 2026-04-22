@@ -59,8 +59,10 @@ export default function LeaderboardPage() {
   // New Modal States
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<LeaderboardItem | null>(null);
   const [message, setMessage] = useState('');
+  const [adjustData, setAdjustData] = useState({ points: 0, reason: '' });
 
   const fetchLeaderboard = async () => {
     try {
@@ -110,6 +112,26 @@ export default function LeaderboardPage() {
        setMessage('');
        setShowMessageModal(false);
     }, 1000);
+  };
+
+  const handleAdjustPoints = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+
+    try {
+      setLoading(true);
+      const res = await api.post(`/rewards/customers/${selectedUser.id}/adjust`, adjustData);
+      if (res.data.success) {
+        toast.success(`Point ${selectedUser.name} berhasil disesuaikan`);
+        setShowAdjustModal(false);
+        setAdjustData({ points: 0, reason: '' });
+        fetchLeaderboard();
+      }
+    } catch (err: any) {
+      toast.error('Gagal menyesuaikan point');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -242,12 +264,13 @@ export default function LeaderboardPage() {
                          <td className="py-5 px-8"><TierBadge tier={item.tier} /></td>
                          <td className="py-5 px-8 text-xs font-bold text-slate-500 uppercase tracking-tight">{item.months_active || 0} bln aktif</td>
                          <td className="py-5 px-8 text-right">
-                            <div className="flex items-center justify-end space-x-2 opacity-30 group-hover:opacity-100 transition-all">
-                               <button onClick={() => handleViewProfile(item)} className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm"><Eye size={16} /></button>
-                               <button onClick={() => handleOpenChat(item)} className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"><MessageCircle size={16} /></button>
-                            </div>
-                         </td>
-                      </tr>
+                             <div className="flex items-center justify-end space-x-2 opacity-30 group-hover:opacity-100 transition-all">
+                                <button onClick={() => handleViewProfile(item)} className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm"><Eye size={16} /></button>
+                                <button onClick={() => { setSelectedUser(item); setShowAdjustModal(true); }} className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-yellow-500 hover:text-white transition-all shadow-sm"><Star size={16} /></button>
+                                <button onClick={() => handleOpenChat(item)} className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"><MessageCircle size={16} /></button>
+                             </div>
+                          </td>
+                       </tr>
                     ))
                   )}
                </tbody>
@@ -277,8 +300,8 @@ export default function LeaderboardPage() {
                   <button onClick={() => handleViewProfile(item)} className="py-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-900 hover:text-white transition-all font-black text-[10px] tracking-widest uppercase flex items-center justify-center gap-2">
                      <Eye size={14} /> PROFILE
                   </button>
-                  <button onClick={() => handleOpenChat(item)} className="py-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-emerald-600 hover:text-white transition-all font-black text-[10px] tracking-widest uppercase flex items-center justify-center gap-2">
-                     <MessageCircle size={14} /> CHAT
+                  <button onClick={() => { setSelectedUser(item); setShowAdjustModal(true); }} className="py-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-yellow-500 hover:text-white transition-all font-black text-[10px] tracking-widest uppercase flex items-center justify-center gap-2">
+                     <Star size={14} /> ADJUST
                   </button>
                </div>
             </div>
@@ -333,6 +356,44 @@ export default function LeaderboardPage() {
                     </div>
                  </div>
               </div>
+           </div>
+        </div>
+      )}
+
+      {/* Adjust Points Modal */}
+      {showAdjustModal && selectedUser && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+           <div className="bg-white rounded-[3rem] shadow-2xl max-w-md w-full p-10 animate-in fade-in zoom-in duration-300">
+              <div className="flex items-center justify-between mb-8">
+                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">Sesuaikan Point</h2>
+                 <button onClick={() => setShowAdjustModal(false)} className="p-2 hover:bg-slate-50 rounded-full text-slate-400"><X size={24} /></button>
+              </div>
+              <form onSubmit={handleAdjustPoints} className="space-y-6">
+                 <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Jumlah Point (+/-)</label>
+                    <input 
+                      required
+                      type="number"
+                      value={adjustData.points}
+                      onChange={(e) => setAdjustData({...adjustData, points: Number(e.target.value)})}
+                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl font-bold text-lg focus:ring-2 focus:ring-yellow-500 transition-all shadow-inner"
+                      placeholder="e.g. 500 or -200"
+                    />
+                 </div>
+                 <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">Alasan / Keterangan</label>
+                    <textarea 
+                      required
+                      value={adjustData.reason}
+                      onChange={(e) => setAdjustData({...adjustData, reason: e.target.value})}
+                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl font-bold text-sm resize-none focus:ring-2 focus:ring-yellow-500 transition-all shadow-inner h-24"
+                      placeholder="e.g. Bonus Loyalty Anniversary"
+                    />
+                 </div>
+                 <button type="submit" className="w-full bg-slate-900 text-white py-5 rounded-[2.5rem] font-black text-lg hover:bg-yellow-500 transition-all shadow-xl shadow-yellow-100 flex items-center justify-center gap-2">
+                    <Zap size={20} /> UPDATE POINT
+                 </button>
+              </form>
            </div>
         </div>
       )}

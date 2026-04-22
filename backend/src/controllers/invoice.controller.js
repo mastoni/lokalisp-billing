@@ -87,4 +87,35 @@ const deleteById = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, delete: deleteById };
+const getPublicByNumber = async (req, res) => {
+  try {
+    const { invoiceNumber } = req.params;
+    const invoice = await invoiceService.getInvoiceByNumber(invoiceNumber);
+    if (!invoice) {
+       return res.status(404).json({ success: false, message: 'Invoice not found' });
+    }
+    res.status(200).json({ success: true, data: invoice });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const remind = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await invoiceService.remind(id);
+    res.status(200).json({ success: true, message: 'Reminder sent' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { 
+  getAll, 
+  getById, 
+  create, 
+  update, 
+  delete: deleteById,
+  getPublicByNumber,
+  remind
+};

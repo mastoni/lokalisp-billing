@@ -46,16 +46,45 @@ const InvoiceService = {
     return result.rows[0] || null;
   },
 
+  async getInvoiceByNumber(invoiceNumber) {
+    const query = `
+      SELECT i.*, c.name as customer_name, c.email as customer_email, c.phone as customer_phone, c.address as customer_address,
+             p.package_name
+      FROM invoices i
+      JOIN customers c ON i.customer_id = c.id
+      LEFT JOIN packages p ON i.package_id = p.id
+      WHERE i.invoice_number = $1
+    `;
+    const result = await db.query(query, [invoiceNumber]);
+    return result.rows[0] || null;
+  },
+
   async createInvoice(data) {
-    const { customer_id, package_id, amount, status, issue_date, due_date, notes } = data;
+    const { customerId, amount, dueDate, notes, packageId } = data;
+    
+    // If packageId not provided, try to get it from customer record
+    let finalPackageId = packageId;
+    if (!finalPackageId) {
+      const customerResult = await db.query('SELECT package_id FROM customers WHERE id = $1', [customerId]);
+      finalPackageId = customerResult.rows[0]?.package_id;
+    }
+
     const query = `
       INSERT INTO invoices (customer_id, package_id, amount, status, issue_date, due_date, notes)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
-    const values = [customer_id, package_id, amount, status || 'pending', issue_date || new Date(), due_date, notes];
+    const values = [customerId, finalPackageId, amount, 'pending', new Date(), dueDate, notes];
     const result = await db.query(query, values);
     return result.rows[0];
+  },
+
+  async remind(id) {
+    const invoice = await this.getInvoiceById(id);
+    if (!invoice) return false;
+    
+    console.log(`[MOCK EMAIL/SMS] Reminder sent to ${invoice.customer_name} (${invoice.customer_phone}) for Invoice #${invoice.invoice_number}`);
+    return true;
   },
 
   async updateInvoice(id, data) {

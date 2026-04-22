@@ -1,276 +1,265 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  DollarSign,
-  Calendar,
-  Download,
-  Filter,
-  RefreshCw,
-  ArrowUpRight,
+import { useState, useMemo } from 'react';
+import { 
+  TrendingUp, 
+  Users, 
+  CreditCard, 
+  Package, 
+  ArrowUpRight, 
   ArrowDownRight,
-  PieChart as PieIcon,
+  Filter,
+  Download,
+  Calendar,
+  ChevronRight,
+  Zap,
+  DollarSign,
   Activity,
-  ArrowLeft,
-  Search,
-  CheckCircle,
-  Clock,
-  Package
+  BarChart3,
+  PieChart as PieIcon
 } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  AreaChart,
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  AreaChart, 
   Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
   PieChart,
   Pie,
-  Cell,
-  BarChart,
-  Bar,
-  Legend
+  Cell
 } from 'recharts';
-import toast from 'react-hot-toast';
-import api from '@/lib/api';
+
+const revenueData = [
+  { name: 'Jan', revenue: 45000000 },
+  { name: 'Feb', revenue: 52000000 },
+  { name: 'Mar', revenue: 48000000 },
+  { name: 'Apr', revenue: 61000000 },
+  { name: 'May', revenue: 55000000 },
+  { name: 'Jun', revenue: 67000000 },
+];
+
+const customerGrowthData = [
+  { name: 'Jan', count: 400 },
+  { name: 'Feb', count: 420 },
+  { name: 'Mar', count: 450 },
+  { name: 'Apr', count: 480 },
+  { name: 'May', count: 510 },
+  { name: 'Jun', count: 545 },
+];
+
+const packageDistData = [
+  { name: 'Basic', value: 40, color: '#6366f1' },
+  { name: 'Family', value: 35, color: '#8b5cf6' },
+  { name: 'Premium', value: 25, color: '#ec4899' },
+];
 
 export default function AnalyticsPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [timeframe, setTimeframe] = useState<'30days' | '90days' | '12months'>('30days');
-  const [data, setData] = useState<any>(null);
-
-  useEffect(() => {
-    fetchAnalytics();
-  }, [timeframe]);
-
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      // Mocking parallel fetch for multiple analytics endpoints
-      const [res] = await Promise.all([
-         api.get('/dashboard/stats') // Basic stats as baseline
-      ]);
-      
-      // Since specific analytics endpoints might not exist yet, we'll use a mix of real stats and high-quality mock for the visuals
-      setData({
-         revenue: [
-            { name: 'Jan', value: 45000000 },
-            { name: 'Feb', value: 52000000 },
-            { name: 'Mar', value: 48000000 },
-            { name: 'Apr', value: 61000000 },
-            { name: 'May', value: 55000000 },
-            { name: 'Jun', value: 72000000 },
-         ],
-         growth: [
-            { name: 'Week 1', new: 12, churn: 2 },
-            { name: 'Week 2', new: 15, churn: 1 },
-            { name: 'Week 3', new: 8, churn: 3 },
-            { name: 'Week 4', new: 22, churn: 0 },
-         ],
-         packages: [
-            { name: 'Basic 10Mbps', value: 45, color: '#8b5cf6' },
-            { name: 'Family 20Mbps', value: 30, color: '#3b82f6' },
-            { name: 'Premium 50Mbps', value: 15, color: '#10b981' },
-            { name: 'Business 100Mbps', value: 10, color: '#f59e0b' },
-         ],
-         performance: [
-            { name: 'Collection Rate', value: 94, trend: 'up' },
-            { name: 'Churn Rate', value: 2.5, trend: 'down' },
-            { name: 'Avg. ARPU', value: 185000, trend: 'up' },
-         ]
-      });
-    } catch (e) {
-      toast.error('Gagal mengambil data analitik');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(val);
-  };
-
-  if (loading && !data) return <LoadingState />;
+  const [timeRange, setTimeRange] = useState('6M');
 
   return (
-    <div className="space-y-8 pb-10 animate-in fade-in duration-700">
+    <div className="space-y-8 pb-10 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-           <button onClick={() => router.back()} className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-slate-900 transition-all shadow-sm"><ArrowLeft size={20} /></button>
-           <div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">Business Analytics</h1>
-              <p className="text-slate-500 font-medium">Laporan mendalam performa keuangan dan pertumbuhan pelanggan.</p>
-           </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600 shadow-lg flex items-center justify-center text-white">
+            <BarChart3 className="w-7 h-7" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Analytics Dashboard</h1>
+            <p className="text-slate-500 font-medium tracking-tight">Wawasan mendalam tentang performa bisnis Anda</p>
+          </div>
         </div>
-        <div className="flex bg-slate-100 p-1.5 rounded-3xl shadow-inner">
-           {['30days', '90days', '12months'].map((t) => (
-             <button
-               key={t}
-               onClick={() => setTimeframe(t as any)}
-               className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${timeframe === t ? 'bg-white text-purple-600 shadow-xl' : 'text-slate-500'}`}
-             >
-               {t === '30days' ? '1 Bulan' : t === '90days' ? '3 Bulan' : '1 Tahun'}
-             </button>
-           ))}
+        <div className="flex items-center gap-3">
+          <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-100">
+            {['1M', '3M', '6M', '1Y'].map(range => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${timeRange === range ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+          <button className="p-3 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 shadow-sm">
+            <Download size={20} />
+          </button>
         </div>
       </div>
 
-      {/* High-level KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-         {data?.performance.map((p: any) => (
-           <div key={p.name} className="bg-white rounded-[3rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
-              <div className="flex items-center justify-between mb-4">
-                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.name}</h3>
-                 <div className={`p-1.5 rounded-lg ${p.trend === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                    {p.trend === 'up' ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                 </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                 <p className="text-4xl font-black text-slate-900 tracking-tight">{p.name === 'Avg. ARPU' ? formatCurrency(p.value) : p.value + '%'}</p>
-                 <span className="text-[10px] font-black text-slate-300 uppercase">Per Period</span>
-              </div>
-           </div>
-         ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         {/* Detailed Revenue Trend */}
-         <div className="lg:col-span-2">
-            <ChartCard title="Revenue Growth" subtitle="Monitoring monthly financial performance">
-               <div className="h-[400px] w-full mt-8">
-                  <ResponsiveContainer width="100%" height="100%">
-                     <AreaChart data={data?.revenue}>
-                        <defs>
-                           <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                              <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                           </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}} dy={10} />
-                        <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}} 
-                           tickFormatter={(val) => `Rp ${val/1000000}jt`} 
-                        />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Area type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={5} fillOpacity={1} fill="url(#colorRev)" />
-                     </AreaChart>
-                  </ResponsiveContainer>
-               </div>
-            </ChartCard>
-         </div>
-
-         {/* Subscriber Distribution */}
-         <ChartCard title="Layanan Terpopuler" subtitle="Breakdown of package distribution">
-            <div className="h-[300px] w-full relative">
-               <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                     <Pie data={data?.packages} innerRadius={80} outerRadius={100} paddingAngle={5} dataKey="value">
-                        {data?.packages.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                     </Pie>
-                     <Tooltip contentStyle={{borderRadius: '20px', border: 'none', fontWeight: 900}} />
-                  </PieChart>
-               </ResponsiveContainer>
-               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <p className="text-3xl font-black text-slate-900">100%</p>
-                  <p className="text-[10px] font-black text-slate-400 uppercase">Coverage</p>
-               </div>
-            </div>
-            <div className="space-y-4 mt-8">
-               {data?.packages.map((p: any) => (
-                 <div key={p.name} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div className="flex items-center gap-3">
-                       <div className="w-3 h-3 rounded-full" style={{backgroundColor: p.color}}></div>
-                       <span className="text-xs font-black text-slate-700">{p.name}</span>
-                    </div>
-                    <span className="text-xs font-black text-slate-900">{p.value}%</span>
-                 </div>
-               ))}
-            </div>
-         </ChartCard>
+      {/* Top Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <AnalyticStat 
+          label="Total Revenue" 
+          value="Rp 328,4M" 
+          change="+12.5%" 
+          trend="up" 
+          icon={DollarSign} 
+        />
+        <AnalyticStat 
+          label="Active Users" 
+          value="545" 
+          change="+4.3%" 
+          trend="up" 
+          icon={Users} 
+        />
+        <AnalyticStat 
+          label="Avg. ARPU" 
+          value="Rp 245K" 
+          change="-1.2%" 
+          trend="down" 
+          icon={Activity} 
+        />
+        <AnalyticStat 
+          label="Points Redemption" 
+          value="1.2k" 
+          change="+24%" 
+          trend="up" 
+          icon={Zap} 
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-         {/* Growth vs Churn */}
-         <ChartCard title="Customer Pipeline" subtitle="Weekly new acquisition vs churn rate">
-            <div className="h-[350px] w-full mt-8">
-               <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data?.growth}>
-                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}} />
-                     <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 900, fill: '#94a3b8'}} />
-                     <Tooltip contentStyle={{borderRadius: '16px', border: 'none'}} />
-                     <Legend iconType="circle" wrapperStyle={{paddingTop: '20px', fontSize: '10px', fontWeight: 900}} />
-                     <Bar dataKey="new" name="Pelanggan Baru" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
-                     <Bar dataKey="churn" name="Berhenti" fill="#f43f5e" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-               </ResponsiveContainer>
-            </div>
-         </ChartCard>
+        {/* Revenue Performance */}
+        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">Revenue Performance</h2>
+            <TrendingUp size={20} className="text-emerald-500" />
+          </div>
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={revenueData}>
+                <defs>
+                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 700, fill: '#94a3b8'}} />
+                <YAxis hide />
+                <Tooltip 
+                  contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                  formatter={(value: any) => [`Rp ${value.toLocaleString()}`, 'Revenue']}
+                />
+                <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorRev)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-         {/* Efficiency Score */}
-         <div className="bg-slate-900 rounded-[3rem] p-12 text-white relative overflow-hidden flex flex-col justify-between">
-            <div className="relative z-10">
-               <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-10"><TrendingUp size={32} /></div>
-               <h2 className="text-4xl font-black mb-4 tracking-tight">Business Efficiency Score</h2>
-               <p className="text-white/50 text-base leading-relaxed max-w-sm">Performa bisnis Anda berada di atas rata-rata industri dengan collection rate sebesar 94%.</p>
-            </div>
-            <div className="relative z-10 flex gap-6 mt-16 pt-10 border-t border-white/10">
-               <div><p className="text-xs font-black text-white/40 mb-1 uppercase tracking-widest">Collection</p><p className="text-3xl font-black">Stable</p></div>
-               <div><p className="text-xs font-black text-white/40 mb-1 uppercase tracking-widest">Growth</p><p className="text-3xl font-black text-emerald-400">+18.5%</p></div>
-            </div>
-            <Activity className="absolute -bottom-10 -right-10 w-96 h-96 text-white/5 rotate-12" />
-         </div>
+        {/* Customer Growth */}
+        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">Customer Growth</h2>
+            <div className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest">+45 THIS MONTH</div>
+          </div>
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={customerGrowthData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 700, fill: '#94a3b8'}} />
+                <YAxis hide />
+                <Tooltip 
+                  cursor={{fill: '#f8fafc'}}
+                  contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                />
+                <Bar dataKey="count" fill="#6366f1" radius={[10, 10, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Package Distribution */}
+        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm lg:col-span-1">
+          <h2 className="text-xl font-black text-slate-900 tracking-tight mb-8">Package Distribution</h2>
+          <div className="h-64 w-full relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={packageDistData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {packageDistData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-4">
+            {packageDistData.map((pkg) => (
+              <div key={pkg.name} className="flex items-center justify-between">
+                <div className="flex items-center text-xs font-bold text-slate-600">
+                  <div className="w-3 h-3 rounded-full mr-3" style={{backgroundColor: pkg.color}}></div>
+                  {pkg.name} Package
+                </div>
+                <span className="text-xs font-black text-slate-900">{pkg.value}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Transactions Table */}
+        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm lg:col-span-2">
+           <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">Top Performance Agents</h2>
+              <button className="text-xs font-black text-indigo-600 hover:text-indigo-700">View All Account</button>
+           </div>
+           <div className="space-y-6">
+              {[
+                { name: 'Sembok Global', customers: 124, revenue: 15450000, trend: '+8%' },
+                { name: 'Jaya Mandiri', customers: 89, revenue: 9840000, trend: '+12%' },
+                { name: 'Putra Tech', customers: 76, revenue: 8200000, trend: '-2%' },
+                { name: 'Mega Nusantara', customers: 54, revenue: 6100000, trend: '+5%' },
+              ].map((agent, i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center font-black text-xs text-slate-900">{agent.name.charAt(0)}</div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900 leading-tight">{agent.name}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{agent.customers} Customers</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-black text-slate-900">Rp {agent.revenue.toLocaleString()}</p>
+                    <p className={`text-[10px] font-black ${agent.trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>{agent.trend}</p>
+                  </div>
+                </div>
+              ))}
+           </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function ChartCard({ title, subtitle, children }: any) {
+function AnalyticStat({ label, value, change, trend, icon: Icon }: any) {
   return (
-    <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-sm">
-       <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">{title}</h2>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{subtitle}</p>
-       </div>
-       {children}
+    <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400">
+          <Icon size={24} />
+        </div>
+        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black ${trend === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+          {trend === 'up' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+          {change}
+        </div>
+      </div>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+      <p className="text-2xl font-black text-slate-900 tracking-tight">{value}</p>
     </div>
   );
-}
-
-function CustomTooltip({ active, payload, label }: any) {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white p-6 rounded-[2rem] shadow-2xl border border-slate-50 flex flex-col gap-1">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{label}</p>
-        <p className="text-xl font-black text-slate-900">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(payload[0].value)}</p>
-      </div>
-    );
-  }
-  return null;
-}
-
-function LoadingState() {
-   return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
-         <div className="w-20 h-20 relative">
-            <div className="absolute inset-0 rounded-full border-4 border-purple-100 animate-pulse"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-t-purple-600 animate-spin"></div>
-         </div>
-         <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest mt-8">Generating Reports...</p>
-      </div>
-   );
 }

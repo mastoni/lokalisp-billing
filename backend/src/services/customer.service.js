@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const IntegrationService = require('./integration.service');
 
 const CustomerService = {
   async getAllCustomers(filters = {}) {
@@ -98,7 +99,34 @@ const CustomerService = {
     `;
     const values = [name, email, phone, address, package_id, status || 'active', ont_serial_number, device_id];
     const result = await db.query(query, values);
-    return result.rows[0];
+    const newCustomer = result.rows[0];
+
+    // Sync to MikroTik/RADIUS if device_id is provided and status is active
+    if (newCustomer && device_id && (status === 'active' || !status)) {
+      try {
+        const username = newCustomer.email || newCustomer.phone || newCustomer.id;
+        const password = newCustomer.phone || '12345678';
+
+        await IntegrationService.syncMikrotikSecret({
+          name: username,
+          password: password,
+          comment: `Customer: ${newCustomer.name}`
+        });
+        
+        // --- RADIUS SYNC ---
+        await IntegrationService.syncRadiusUser({
+          username,
+          password
+        });
+
+        // Default group assignment
+        await IntegrationService.setRadiusUserGroup(username, 'Default-Profile');
+      } catch (err) {
+        console.error('Failed to sync to MikroTik/RADIUS on creation:', err.message);
+      }
+    }
+
+    return newCustomer;
   },
 
   async updateCustomer(id, data) {
@@ -120,11 +148,47 @@ const CustomerService = {
       WHERE id = $${idx}
       RETURNING *
     `;
-
     const result = await db.query(query, values);
+    const updated = result.rows[0];
+
+    // Handle status changes for MikroTik/RADIUS
+    if (updated) {
+      if (data.status === 'active') {
+        try {
+          const username = updated.email || updated.phone || updated.id;
+          const password = updated.phone || '12345678';
+
+          await IntegrationService.syncMikrotikSecret({
+            name: username,
+            password: password,
+            comment: `Customer: ${updated.name}`
+          });
+
+          await IntegrationService.syncRadiusUser({
+            username: username,
+            password: password
+          });
+          await IntegrationService.setRadiusUserGroup(username, 'Default-Profile');
+
+        } catch (err) {
+          console.error('MikroTik/RADIUS sync error on status change:', err.message);
+        }
+      } else if (data.status === 'isolir' || data.status === 'non-active') {
+        try {
+          const username = updated.email || updated.phone || updated.id;
+          await IntegrationService.kickMikrotikSession(username);
+          
+          if (data.status === 'isolir') {
+            await IntegrationService.setRadiusUserGroup(username, 'Isolir-Profile');
+          }
+        } catch (err) {
+          console.error('MikroTik/RADIUS management error:', err.message);
+        }
+      }
+    }
 
     // Trigger point awarding if status becomes active
-    if (data.status === 'active' && result.rows[0]) {
+    if (data.status === 'active' && updated) {
       try {
         const RewardService = require('./reward.service');
         await RewardService.checkAndAwardReferralPoints(id);
@@ -133,7 +197,7 @@ const CustomerService = {
       }
     }
 
-    return result.rows[0];
+    return updated;
   },
 
   async deleteCustomer(id) {

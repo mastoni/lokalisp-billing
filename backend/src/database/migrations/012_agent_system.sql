@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS agent_withdrawals (
 );
 
 -- Indexes for performance
-CREATE INDEX idx_customers_agent ON customers(agent_id);
-CREATE INDEX idx_commissions_agent ON agent_commissions(agent_id);
-CREATE INDEX idx_withdrawals_agent ON agent_withdrawals(agent_id);
+CREATE INDEX IF NOT EXISTS idx_customers_agent ON customers(agent_id);
+CREATE INDEX IF NOT EXISTS idx_commissions_agent ON agent_commissions(agent_id);
+CREATE INDEX IF NOT EXISTS idx_withdrawals_agent ON agent_withdrawals(agent_id);
 
 COMMENT ON TABLE agent_commissions IS 'Records of commissions earned by agents from customer payments';
 COMMENT ON TABLE agent_withdrawals IS 'Records of commission withdrawals requested by agents';

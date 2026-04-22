@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS maintenance_logs (
 );
 
 -- Trigger for support_tickets updated_at
+DROP TRIGGER IF EXISTS trg_support_tickets_updated ON support_tickets;
 CREATE TRIGGER trg_support_tickets_updated
     BEFORE UPDATE ON support_tickets
     FOR EACH ROW
@@ -49,6 +50,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_ticket_code ON support_tickets;
 CREATE TRIGGER trg_ticket_code
     BEFORE INSERT ON support_tickets
     FOR EACH ROW
@@ -56,9 +58,9 @@ CREATE TRIGGER trg_ticket_code
     EXECUTE FUNCTION generate_ticket_code();
 
 -- Create Indexes
-CREATE INDEX idx_tickets_status ON support_tickets(status);
-CREATE INDEX idx_tickets_technician ON support_tickets(technician_id);
-CREATE INDEX idx_tickets_customer ON support_tickets(customer_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_status ON support_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_technician ON support_tickets(technician_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_customer ON support_tickets(customer_id);
 
 COMMENT ON TABLE support_tickets IS 'Support and maintenance tickets for technical issues';
 COMMENT ON TABLE maintenance_logs IS 'History of maintenance activities performed by technicians';

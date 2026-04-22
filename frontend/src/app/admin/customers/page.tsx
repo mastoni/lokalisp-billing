@@ -53,7 +53,7 @@ export default function CustomersPage() {
     phone: '',
     address: '',
     subscriptionPlan: 'Basic 10Mbps',
-    status: 'active' as 'active' | 'inactive' | 'suspended',
+    status: 'active' as 'active' | 'pending' | 'suspended' | 'inactive',
     tier: 'Bronze'
   });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export default function CustomersPage() {
       setLoading(true);
       const data = await customerService.getAll();
       if (data.success) {
-        setCustomers(data.data);
+        setCustomers(data.data || []);
       }
     } catch (error: any) {
       toast.error('Gagal mengambil data pelanggan');
@@ -77,6 +77,7 @@ export default function CustomersPage() {
   }, []);
 
   const filteredCustomers = useMemo(() => {
+    if (!customers) return [];
     return customers.filter((customer) => {
       const name = customer.name || '';
       const email = customer.email || '';
@@ -93,6 +94,7 @@ export default function CustomersPage() {
   }, [customers, searchTerm, statusFilter, tierFilter]);
 
   const stats = useMemo(() => {
+    if (!customers) return { total: 0, active: 0, pending: 0, suspended: 0 };
     return {
       total: customers.length,
       active: customers.filter(c => c.status === 'active').length,
@@ -117,13 +119,14 @@ export default function CustomersPage() {
 
   const handleEdit = (customer: any) => {
     setEditingId(customer.id);
+    setSelectedCustomer(customer);
     setFormData({
-      name: customer.name,
+      name: customer.name || '',
       email: customer.email || '',
       phone: customer.phone || '',
       address: customer.address || '',
       subscriptionPlan: customer.subscriptionPlan || 'Basic 10Mbps',
-      status: customer.status as any,
+      status: (customer.status || 'active') as any,
       tier: customer.tier || 'Bronze'
     });
     setModalType('edit');
@@ -149,11 +152,11 @@ export default function CustomersPage() {
     e.preventDefault();
     try {
       if (modalType === 'add') {
-        await customerService.create(formData as any);
-        toast.success('Pelanggan berhasil ditambahkan');
+        const res = await customerService.create(formData as any);
+        if (res.success) toast.success('Pelanggan berhasil ditambahkan');
       } else if (modalType === 'edit' && editingId) {
-        await customerService.update(editingId, formData as any);
-        toast.success('Data pelanggan diperbarui');
+        const res = await customerService.update(editingId, formData as any);
+        if (res.success) toast.success('Data pelanggan diperbarui');
       }
       setModalType(null);
       fetchCustomers();

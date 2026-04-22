@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -28,7 +28,10 @@ import {
   Clock,
   Star,
   Trophy,
-  Coins
+  Coins,
+  Network,
+  Cpu,
+  Router
 } from 'lucide-react';
 
 const navigation = [
@@ -66,6 +69,19 @@ const managementNav = [
     name: 'Packages',
     href: '/admin/packages',
     icon: Package,
+  },
+];
+
+const integrationNav = [
+  {
+    name: 'MikroTik',
+    href: '/admin/integrations/mikrotik',
+    icon: Network,
+  },
+  {
+    name: 'GenieACS',
+    href: '/admin/integrations/genieacs',
+    icon: Router,
   },
 ];
 
@@ -114,6 +130,11 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [rewardsExpanded, setRewardsExpanded] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isActive = (path: string) => pathname === path;
 
@@ -255,6 +276,31 @@ export default function AdminLayout({
             </div>
           </div>
 
+          {/* Integrations */}
+          <div>
+            {sidebarOpen && (
+              <p className="px-4 mb-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Integrations
+              </p>
+            )}
+            <div className="space-y-1">
+              {integrationNav.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
+                    isActive(item.href)
+                      ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg shadow-orange-500/30'
+                      : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                  }`}
+                >
+                  <item.icon className={`w-5 h-5 ${sidebarOpen ? 'mr-3' : 'mx-auto'}`} />
+                  {sidebarOpen && <span className="font-medium text-sm md:text-base">{item.name}</span>}
+                </Link>
+              ))}
+            </div>
+          </div>
+
           {/* Settings */}
           <div>
             {sidebarOpen && (
@@ -316,12 +362,12 @@ export default function AdminLayout({
               </button>
               <div className="hidden md:flex items-center space-x-2 text-sm text-slate-600">
                 <Clock className="w-4 h-4" />
-                <span>{new Date().toLocaleDateString('id-ID', { 
+                <span>{mounted ? new Date().toLocaleDateString('id-ID', { 
                   weekday: 'long', 
                   year: 'numeric', 
                   month: 'long', 
                   day: 'numeric' 
-                })}</span>
+                }) : 'Loading...'}</span>
               </div>
             </div>
 

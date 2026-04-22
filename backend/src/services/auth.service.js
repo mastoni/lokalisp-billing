@@ -173,6 +173,80 @@ class AuthService {
       },
     };
   }
+
+  async forgotPassword(emailOrUsername) {
+    const user = await userModel.findByEmail(emailOrUsername) || 
+                 await userModel.findByUsername(emailOrUsername);
+
+    if (!user) {
+      return { 
+        success: true, 
+        message: 'If an account exists with that email, we will send a reset link.' 
+      };
+    }
+
+    // Generate random token
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 3600000); // 1 hour
+
+    // Store in database
+    const db = require('../config/database');
+    await db.query(
+      'INSERT INTO password_resets (user_id, token, expires_at) VALUES ($1, $2, $3)',
+      [user.id, token, expiresAt]
+    );
+
+    // MOCK EMAIL LOGIC
+    console.log(`[PASS_RESET] Token for ${user.email}: ${token}`);
+    console.log(`URL: http://localhost:3000/reset-password?token=${token}`);
+
+    return { 
+      success: true, 
+      message: 'If an account exists with that email, we will send a reset link.' 
+    };
+  }
+
+  async resetPassword(token, newPassword) {
+    const db = require('../config/database');
+    
+    // Find reset record and user
+    const res = await db.query(
+      `SELECT r.user_id, r.expires_at, u.username 
+       FROM password_resets r 
+       JOIN users u ON u.id = r.user_id 
+       WHERE r.token = $1 AND r.used = false`,
+      [token]
+    );
+
+    if (res.rows.length === 0) {
+      return { success: false, message: 'Invalid or expired token' };
+    }
+
+    const { user_id, expires_at } = res.rows[0];
+
+    // Check expiration
+    if (new Date() > new Date(expires_at)) {
+      return { success: false, message: 'Token has expired' };
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(BCRYPT_ROUNDS);
+    const passwordHash = await bcrypt.hash(newPassword, salt);
+
+    // Update user and mark token as used
+    await db.query('BEGIN');
+    try {
+      await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, user_id]);
+      await db.query('UPDATE password_resets SET used = true WHERE token = $1', [token]);
+      await db.query('COMMIT');
+    } catch (err) {
+      await db.query('ROLLBACK');
+      throw err;
+    }
+
+    return { success: true, message: 'Password has been reset successfully' };
+  }
 }
 
 module.exports = new AuthService();
